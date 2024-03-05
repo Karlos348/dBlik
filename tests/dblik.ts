@@ -5,9 +5,9 @@ import { SystemProgram, PublicKey, Keypair } from "@solana/web3.js";
 import { assert } from "chai";
 
 describe("dblik", () => {
-
-  // Configure the client to use the local cluster.
   const provider = anchor.AnchorProvider.env();
+  console.log("wallet public key: ", provider.wallet.publicKey);
+  
   anchor.setProvider(provider);
   const user = provider.wallet;
   const program = anchor.workspace.Dblik as Program<Dblik>;
@@ -16,17 +16,28 @@ describe("dblik", () => {
 
   it("initialize", async () => {
     const tx = await program.methods.initialize().accounts({
-      acc: newAcc.publicKey
+      programData: newAcc.publicKey
     })
     .signers([newAcc]).rpc();
     console.log("Your transaction signature", tx);
-  });
 
+    var tst = await program.account.programData.fetch(newAcc.publicKey);
+    console.log("transactions: ", tst.transactions);
+    //assert.equal(123321, tst.code.toNumber());
+  });
+/*
   it("set data", async () => {
-    const tx = await program.methods.setData(new anchor.BN(10))
+    const data = 555666;
+    const tx = await program.methods.setData(new anchor.BN(data))
     .accounts({
-      myAccount: newAcc.publicKey
+      transaction: newAcc.publicKey
     }).rpc();
     console.log("Your transaction signature", tx);
-  })
+
+    var tst = await program.account.transaction.fetch(newAcc.publicKey);
+    console.log("code: ", tst.code.toNumber());
+    console.log("customer: ", tst.customer);
+    console.log("shop: ", tst.shop);
+    assert.equal(data, tst.code.toNumber());
+  });*/
 });
