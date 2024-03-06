@@ -1,4 +1,4 @@
-use anchor_lang::prelude::*;
+use anchor_lang::prelude::{borsh::{BorshDeserialize, BorshSerialize}, *};
 use std::{collections::HashMap, time::SystemTime};
 
 declare_id!("EE4v8mDaBcnXjYakNPUExR1DGZXS4ba4vyBSrqXXRRF3");
@@ -10,8 +10,21 @@ pub mod dblik {
     pub fn initialize(ctx: Context<Initialize>) -> Result<()> {
         //ctx.accounts.transaction.customer = ctx.accounts.signer.key();
         //ctx.accounts.transaction.code = 123321 as u64;
-        ctx.accounts.program_data.transactions = HashMap::new();
-        ctx.accounts.program_data.transactions.insert(123321 as u64, ctx.accounts.signer.key());
+        ctx.accounts.program_data.transactions = vec![ CodeReference { 
+            code: 123321, 
+            transaction: ctx.accounts.signer.key() 
+        }];
+
+        Ok(())
+    }
+
+    pub fn just_logs(ctx: Context<Logs>) -> Result<()> {
+
+        match ctx.accounts.program_data.transactions.get(0)
+        {
+            Some(value) => msg!("code: {}, pubkey: {}", value.code, value.transaction),
+            None => msg!("nothing exists")
+        };
 
         Ok(())
     }
@@ -25,7 +38,7 @@ pub mod dblik {
 
 #[derive(Accounts)]
 pub struct Initialize<'info> {
-    #[account(init, payer = signer, space = 384 + (10000 * (64 + 32)))]
+    #[account(init, payer = signer, space = 24 + (200 * (8 + 32)))]
     pub program_data: Account<'info, ProgramData>,
     #[account(mut)]
     pub signer: Signer<'info>,
@@ -35,7 +48,7 @@ pub struct Initialize<'info> {
 #[account]
 #[derive(Default)]
 pub struct ProgramData {
-    transactions: HashMap<u64, Pubkey> // not supported?
+    transactions: Vec<CodeReference>
 }
 
 #[account]
@@ -46,10 +59,22 @@ pub struct Transaction {
     code: u64
 }
 
+#[derive(Default, AnchorSerialize, AnchorDeserialize, Clone)]
+pub struct CodeReference {
+    code: u64,
+    transaction: Pubkey
+}
+
 #[derive(Accounts)]
 pub struct SetData<'info> {
     #[account(mut)]
     pub transaction: Account<'info, Transaction>
+}
+
+#[derive(Accounts)]
+pub struct Logs<'info> {
+    #[account(mut)]
+    pub program_data: Account<'info, ProgramData>
 }
 
 #[error_code]

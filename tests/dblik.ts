@@ -25,6 +25,16 @@ describe("dblik", () => {
     console.log("transactions: ", tst.transactions);
     //assert.equal(123321, tst.code.toNumber());
   });
+
+  it("just logs", async () => {
+    const tx = await program.methods.justLogs()
+    .accounts({
+      programData: newAcc.publicKey
+    }).rpc();
+    console.log("Your transaction signature", tx);
+  });
+
+
 /*
   it("set data", async () => {
     const data = 555666;
