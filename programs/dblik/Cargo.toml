@@ -17,3 +17,4 @@ default = []
 
 [dependencies]
 anchor-lang = "0.29.0"
+bytemuck = {version = "1.4.0", features = ["derive", "min_const_generics"]}

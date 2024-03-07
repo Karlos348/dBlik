@@ -16,13 +16,15 @@ describe("dblik", () => {
 
   it("initialize", async () => {
     const tx = await program.methods.initialize().accounts({
-      programData: newAcc.publicKey
+      programData: newAcc.publicKey,
+      storage: newAcc.publicKey
     })
     .signers([newAcc]).rpc();
     console.log("Your transaction signature", tx);
 
     var tst = await program.account.programData.fetch(newAcc.publicKey);
     console.log("transactions: ", tst.transactions);
+    
     //assert.equal(123321, tst.code.toNumber());
   });
 

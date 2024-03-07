@@ -15,6 +15,10 @@ pub mod dblik {
             transaction: ctx.accounts.signer.key() 
         }];
 
+        let init = &mut ctx.accounts.storage.load_init()?;
+        init.authority = *ctx.accounts.signer.key;
+        init.test = 348;
+
         Ok(())
     }
 
@@ -42,7 +46,16 @@ pub struct Initialize<'info> {
     pub program_data: Account<'info, ProgramData>,
     #[account(mut)]
     pub signer: Signer<'info>,
-    pub system_program: Program<'info, System>
+    pub system_program: Program<'info, System>,
+    #[account(zero)]
+    pub storage: AccountLoader<'info, ProgramStorage>,
+}
+
+#[account(zero_copy)]
+#[derive(Default)]
+pub struct ProgramStorage {
+    pub authority: Pubkey,
+    pub test : u64
 }
 
 #[account]
