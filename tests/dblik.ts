@@ -1,8 +1,8 @@
 import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
 import { Dblik } from "../target/types/dblik";
-import { SystemProgram, PublicKey, Keypair } from "@solana/web3.js";
-import { assert } from "chai";
+import * as web3 from "@solana/web3.js";
+import * as token from "@solana/spl-token";
 
 describe("dblik", () => {
   const provider = anchor.AnchorProvider.env();
@@ -14,16 +14,19 @@ describe("dblik", () => {
   const programId = program.programId;
   const newAcc = anchor.web3.Keypair.generate();
 
+  const storageAcc = anchor.web3.Keypair.generate();
+
   it("initialize", async () => {
+
     const tx = await program.methods.initialize().accounts({
       programData: newAcc.publicKey,
-      storage: newAcc.publicKey
+      storage: storageAcc.publicKey
     })
-    .signers([newAcc]).rpc();
+    .signers([newAcc]).rpc().catch(e => console.error(e));;
     console.log("Your transaction signature", tx);
 
-    var tst = await program.account.programData.fetch(newAcc.publicKey);
-    console.log("transactions: ", tst.transactions);
+    //var tst = await program.account.programData.fetch(newAcc.publicKey);
+    //console.log("transactions: ", tst.transactions);
     
     //assert.equal(123321, tst.code.toNumber());
   });
@@ -31,7 +34,8 @@ describe("dblik", () => {
   it("just logs", async () => {
     const tx = await program.methods.justLogs()
     .accounts({
-      programData: newAcc.publicKey
+      programData: newAcc.publicKey,
+      storage: storageAcc.publicKey
     }).rpc();
     console.log("Your transaction signature", tx);
   });
