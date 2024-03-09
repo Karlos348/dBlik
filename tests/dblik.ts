@@ -3,42 +3,115 @@ import { Program } from "@coral-xyz/anchor";
 import { Dblik } from "../target/types/dblik";
 import * as web3 from "@solana/web3.js";
 import * as token from "@solana/spl-token";
+import { assert } from "chai";
+
+const provider = anchor.AnchorProvider.env();
+console.log("wallet public key: ", provider.wallet.publicKey);
+anchor.setProvider(provider);
+const user = provider.wallet;
+const program = anchor.workspace.Dblik as Program<Dblik>;
+const programId = program.programId;
 
 describe("dblik", () => {
-  const provider = anchor.AnchorProvider.env();
-  console.log("wallet public key: ", provider.wallet.publicKey);
   
-  anchor.setProvider(provider);
-  const user = provider.wallet;
-  const program = anchor.workspace.Dblik as Program<Dblik>;
-  const programId = program.programId;
-  const newAcc = anchor.web3.Keypair.generate();
+  const zkaccount = anchor.web3.Keypair.generate();
 
-  const storageAcc = anchor.web3.Keypair.generate();
+  it("Create the account", async () => {
+    // Generate a new keypair for the new account
+    const account = anchor.web3.Keypair.generate();
+    const newAccount = anchor.web3.Keypair.generate();
+    const tx = await program.methods
+      .initialize()
+      .accounts({
+        signer: user.publicKey,
+        programData: account.publicKey,
+        storageAccount: newAccount.publicKey
+      })
+      .signers([account, newAccount])
+      .rpc()
+      .catch(e => console.error(e));
 
-  it("initialize", async () => {
+    // Minimum balance for rent exemption for new account
+    const lamports = await provider.connection.getMinimumBalanceForRentExemption(1000);
+    console.log("lamports: ", lamports);
+    console.log("tx signature: ", tx);
 
-    const tx = await program.methods.initialize().accounts({
-      programData: newAcc.publicKey,
-      storage: storageAcc.publicKey
-    })
-    .signers([newAcc]).rpc().catch(e => console.error(e));;
-    console.log("Your transaction signature", tx);
+    // Check that the account was created
+    const accountInfo = await provider.connection.getAccountInfo(newAccount.publicKey);
 
-    //var tst = await program.account.programData.fetch(newAcc.publicKey);
-    //console.log("transactions: ", tst.transactions);
+    assert(accountInfo.owner = web3.SystemProgram.programId);
+    //assert(accountInfo.lamports === lamports);
+  })
+
+  it("zk acc", async () => {
+  
     
-    //assert.equal(123321, tst.code.toNumber());
-  });
+    console.log("zkaccount: ", zkaccount.publicKey);
+    const tx = await program.methods
+      .runZk()
+      .accounts({
+        signer: user.publicKey,
+        programData: zkaccount.publicKey
+      })
+      .signers([zkaccount])
+      .rpc()
+      .catch(e => console.error(e));
 
-  it("just logs", async () => {
-    const tx = await program.methods.justLogs()
-    .accounts({
-      programData: newAcc.publicKey,
-      storage: storageAcc.publicKey
-    }).rpc();
-    console.log("Your transaction signature", tx);
-  });
+      console.log("tx signature: ", tx);
+
+    const accountInfo = await provider.connection.getAccountInfo(account.publicKey);
+
+    //assert(accountInfo.owner = web3.SystemProgram.programId);
+    //assert(accountInfo.lamports === lamports);
+  })
+
+  it("zk acc update", async () => {
+  
+    const account = anchor.web3.Keypair.generate();
+    console.log("account: ", account.publicKey);
+    const tx = await program.methods
+      .runZk()
+      .accounts({
+        signer: user.publicKey,
+        programData: account.publicKey
+      })
+      .signers([user])
+      .rpc()
+      .catch(e => console.error(e));
+
+      console.log("tx signature: ", tx);
+
+    const accountInfo = await provider.connection.getAccountInfo(account.publicKey);
+
+    //assert(accountInfo.owner = web3.SystemProgram.programId);
+    //assert(accountInfo.lamports === lamports);
+  })
+
+
+  // it("initialize", async () => {
+
+  //   const tx = await program.methods.initialize().accounts({
+  //     programData: newAcc.publicKey,
+  //     storage: storageAcc.publicKey
+  //     })
+  //   .signers([newAcc])
+  //   .rpc().catch(e => console.error(e));;
+  //   console.log("Your transaction signature", tx);
+
+  //   //var tst = await program.account.programData.fetch(newAcc.publicKey);
+  //   //console.log("transactions: ", tst.transactions);
+    
+  //   //assert.equal(123321, tst.code.toNumber());
+  // });
+
+  // it("just logs", async () => {
+  //   const tx = await program.methods.justLogs()
+  //   .accounts({
+  //     programData: newAcc.publicKey,
+  //     storage: storageAcc.publicKey
+  //   }).rpc();
+  //   console.log("Your transaction signature", tx);
+  // });
 
 
 /*

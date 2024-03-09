@@ -1,7 +1,5 @@
-use std::default;
-
 use anchor_lang::prelude::*;
-use arrayref::*;
+use anchor_lang::solana_program::system_program;
 
 declare_id!("EE4v8mDaBcnXjYakNPUExR1DGZXS4ba4vyBSrqXXRRF3");
 
@@ -10,102 +8,112 @@ pub mod dblik {
 
     use super::*;
 
-    pub fn initialize(ctx: Context<Initialize>) -> Result<()> {
-        //ctx.accounts.transaction.customer = ctx.accounts.signer.key();
-        //ctx.accounts.transaction.code = 123321 as u64;
-        // ctx.accounts.program_data.transactions = vec![ CodeReference { 
-        //     code: 123321, 
-        //     transaction: ctx.accounts.signer.key() 
-        // }];
+    pub fn initialize(ctx: Context<Run>) -> Result<()> {
+        //ctx.accounts.program_data.timestamp = Utc::now().timestamp_millis();
+        let lamports = (Rent::get()?).minimum_balance(200);
+        anchor_lang::system_program::create_account(
+            CpiContext::new(
+                ctx.accounts.system_program.to_account_info(),
+                anchor_lang::system_program::CreateAccount {
+                    from: ctx.accounts.signer.to_account_info(),
+                    to: ctx.accounts.storage_account.to_account_info(),
+                },
+            ),
+            lamports,
+            200, // space
+            &ctx.accounts.system_program.key(), // owner
+        )?;
         
-        let storage = &mut ctx.accounts.storage.load_init()?;
-        storage.authority = *ctx.accounts.signer.key;
-        //storage.numbers = [0 as i64; 100];
+        Ok(())
+    }
+
+    pub fn run_zk(ctx: Context<RunZeroCopy>) -> Result<()> {
+        //let data = &mut ctx.accounts.program_data.load_mut()?;
+        //for n in 0..5242880 {
+        //}
+
+        //data.string_5mb[0] = b'a';
+        Ok(())
+    }
+
+    pub fn update_zk(ctx: Context<UpdateZeroCopyData>, string_to_replace: String, replace_at: usize) -> Result<()> {
+        let to_replace = std::str::from_utf8(string_to_replace.as_bytes()).unwrap();
+        msg!(to_replace);
+        let len = to_replace.len();
+
+        ctx.accounts
+            .zc_data
+            .load_mut()?
+            .string_5mb[replace_at..(replace_at + len) as usize]
+            .copy_from_slice(to_replace.as_bytes());
 
         Ok(())
     }
 
     pub fn just_logs(ctx: Context<Logs>) -> Result<()> {
-
-        // match ctx.accounts.program_data.transactions.get(0)
-        // {
-        //     Some(value) => msg!("code: {}, pubkey: {}", value.code, value.transaction),
-        //     None => msg!("nothing exists")
-        // };
-
-        let storage = &mut ctx.accounts.storage.load_mut()?;
-        match storage.numbers.get(123)
-        {
-            Some(value) => {
-                msg!("123: {}", value)
-            },
-            None => msg!(".")
-        };
-
         Ok(())
     }
-
-    // pub fn set_data(ctx: Context<SetData>, data: u64) -> Result<()> {
-    //     require!(data >= 100000 && data <= 999999, Errors::InvalidCode);
-    //     ctx.accounts.transaction.code = data;
-    //     Ok(())
-    // }
 }
 
-
 #[derive(Accounts)]
-pub struct Initialize<'info> {
-    #[account(init, payer = signer, space = 24 + (200 * (8 + 32)))]
+pub struct Run<'info> {
+    #[account(init, payer = signer, space = 500)]
     pub program_data: Account<'info, ProgramData>,
     #[account(mut)]
     pub signer: Signer<'info>,
-    pub system_program: Program<'info, System>,
-    #[account(zero)]
-    pub storage: AccountLoader<'info, ProgramStorage>
+    #[account(mut)]
+    pub storage_account: Signer<'info>,
+    pub system_program: Program<'info, System>
 }
 
 #[derive(Accounts)]
 pub struct Logs<'info> {
     #[account(mut)]
-    pub program_data: Account<'info, ProgramData>,
-    #[account(zero)]
-    pub storage: AccountLoader<'info, ProgramStorage>
-}
-
-#[account(zero_copy)]
-#[derive(Default)]
-pub struct ProgramStorage {
-    pub authority: Pubkey,
-    //pub numbers:[i64; 100],
-    pub idk: Vec<i64>
-    //pub transactions:[CodeReference; 100]
+    pub program_data: Account<'info, ProgramData>
 }
 
 #[account]
 #[derive(Default)]
 pub struct ProgramData {
-    //transactions: Vec<CodeReference>
+    pub timestamp : i64
 }
 
-// #[account]
-// #[derive(Default)]
-// pub struct Transaction {
-//     customer: Pubkey,
-//     shop: Pubkey,
-//     code: u64
-// }
+#[account(zero_copy)]
+#[repr(C)]
+pub struct ZeroCopyData {
+    pub string_5mb: [u8; 5242880],
+}
 
-// #[account(zero_copy)]
-// pub struct CodeReference {
-//     code: u64,
-//     transaction: Pubkey
-// }
+#[derive(Accounts)]
+#[instruction(len: u16)]
+pub struct RunZeroCopy<'info> {
+    #[account(init, 
+        seeds = [b"run_zero_copy_v0", 
+        signer.key().as_ref()], 
+        bump, 
+        payer=signer, 
+        space= 10 * 1024 as usize)]
+    pub program_data: AccountLoader<'info, ZeroCopyData>,
+    #[account(mut)]
+    pub signer: Signer<'info>,
+    #[account(address = system_program::ID)]
+    pub system_program: Program<'info, System>
+}
 
-// #[derive(Accounts)]
-// pub struct SetData<'info> {
-//     #[account(mut)]
-//     pub transaction: Account<'info, Transaction>
-// }
+#[derive(Accounts)]
+pub struct UpdateZeroCopyData<'info> {
+    #[account(mut)]
+    pub zc_data: AccountLoader<'info, ZeroCopyData>,
+    #[account(mut)]
+    pub signer: Signer<'info>,
+}
+
+pub struct Transaction {
+    timestamp: i64,
+    customer: Option<Pubkey>,
+    shop: Pubkey,
+    code: u64
+}
 
 #[error_code]
 pub enum Errors {
