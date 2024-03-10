@@ -6,6 +6,7 @@ skip-lint = false
 
 [programs.devnet]
 dblik = "EE4v8mDaBcnXjYakNPUExR1DGZXS4ba4vyBSrqXXRRF3"
+experiments = "7Vo3RPXvCm7BNgUeHHdYmvMSUUvaWWpyQ6MjiJrpfgFy"
 
 [registry]
 url = "https://api.apr.dev"
@@ -15,4 +16,5 @@ cluster = "devnet"
 wallet = '/mnt/c/Users/Karol/.config/solana/id.json'
 
 [scripts]
-test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
+# test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
+test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/experiments.ts"

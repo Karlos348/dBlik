@@ -1,6 +1,7 @@
 [workspace]
 members = [
-    "programs/dblik"
+    "programs/dblik",
+    "programs/experiments"
 ]
 
 [profile.release]
