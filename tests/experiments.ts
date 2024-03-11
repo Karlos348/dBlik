@@ -25,6 +25,31 @@ describe("experiments", () => {
     console.log("[Standard program] tx: ", tx);
   });
 
+  it("Seed", async () => {
+
+    let accountKeys = anchor.web3.Keypair.generate();
+    const tx = await program.methods.withSeed()
+    .accounts({
+      signer: user.publicKey,
+      programData: accountKeys.publicKey,
+      systemProgram: anchor.web3.SystemProgram.programId
+    })
+    .signers([accountKeys])
+    .rpc()
+    .catch(e => console.error(e));
+
+    console.log("[Created seeded acc] tx: ", tx);
+
+    let utf8Encode = new TextEncoder();
+  
+    const [pda] = await anchor.web3.PublicKey.findProgramAddressSync(
+      [utf8Encode.encode("simple_seed")],
+      anchor.web3.SystemProgram.programId
+    );
+    console.log("[Seeded acc] tx: ", pda);
+    
+  });
+
   it("Create large account", async () => {
 
     let accountKeys = anchor.web3.Keypair.generate();
@@ -45,10 +70,6 @@ describe("experiments", () => {
       [accountKeys],
       [createAccountInstruction],
     );
-
-    //let tx = new anchor.web3.Transaction();
-    //tx.add(createAccountInstruction);
-    //tx.sign([accountKeys]);
     
 
     user.signTransaction(createAccountTransaction);

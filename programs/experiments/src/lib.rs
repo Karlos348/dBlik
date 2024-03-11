@@ -8,6 +8,11 @@ declare_id!("7Vo3RPXvCm7BNgUeHHdYmvMSUUvaWWpyQ6MjiJrpfgFy");
 pub mod experiments {
     use super::*;
 
+    pub fn with_seed(ctx: Context<Seeds>) -> Result<()> {
+        
+        Ok(())
+    }
+
     pub fn standard(ctx: Context<Standard>) -> Result<()> {
         Ok(())
     }
@@ -48,6 +53,16 @@ pub mod experiments {
         // )?;
         Ok(())
     }
+}
+
+#[derive(Accounts)]
+//#[instruction(...)]
+pub struct Seeds<'info> {
+    #[account(init, payer = signer, seeds = [b"simple_seed"], bump, space = 8)]
+    pub program_data: Account<'info, ProgramData>,
+    #[account(mut)]
+    pub signer: Signer<'info>,
+    pub system_program: Program<'info, System>
 }
 
 #[derive(Accounts)]
