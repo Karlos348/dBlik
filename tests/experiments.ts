@@ -1,7 +1,7 @@
 import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
 import { Experiments } from "../target/types/experiments";
-import { LAMPORTS_PER_SOL } from "@solana/web3.js";
+import { Connection, Keypair, LAMPORTS_PER_SOL, PublicKey, TransactionInstruction, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
 
 describe("experiments", () => {
 
@@ -27,10 +27,39 @@ describe("experiments", () => {
 
   it("Create large account", async () => {
 
-    const [pda] = await anchor.web3.PublicKey.findProgramAddressSync(
-      [anchor.AnchorProvider.env().wallet.publicKey.toBuffer()],
-      anchor.web3.SystemProgram.programId
+    let accountKeys = anchor.web3.Keypair.generate();
+
+    let createAccountInstruction = anchor.web3.SystemProgram.createAccount({
+      fromPubkey: user.publicKey,
+      newAccountPubkey: accountKeys.publicKey,
+      lamports: await anchor.AnchorProvider.env().connection.getMinimumBalanceForRentExemption(
+        348
+      ),
+      space: 348,
+      programId: anchor.web3.SystemProgram.programId,
+    });
+
+    const createAccountTransaction = await buildTransaction(
+      anchor.AnchorProvider.env().connection,
+      user.publicKey,
+      [accountKeys],
+      [createAccountInstruction],
     );
+
+    //let tx = new anchor.web3.Transaction();
+    //tx.add(createAccountInstruction);
+    //tx.sign([accountKeys]);
+    
+
+    user.signTransaction(createAccountTransaction);
+    const signature = await anchor.AnchorProvider.env().connection.sendTransaction(createAccountTransaction);
+    console.log("[Create large account]\naccount: https://explorer.solana.com/address/"+accountKeys.publicKey+"?cluster=devnet\ntx: https://explorer.solana.com/tx/"+signature+"?cluster=devnet");
+
+
+    // const [pda] = await anchor.web3.PublicKey.findProgramAddressSync(
+    //   [anchor.AnchorProvider.env().wallet.publicKey.toBuffer()],
+    //   anchor.web3.SystemProgram.programId
+    // );
     // const account3 = anchor.web3.Keypair.generate();
 
     // let acc = anchor.web3.SystemProgram.createAccount({
@@ -47,7 +76,7 @@ describe("experiments", () => {
     // tx.add(acc);
 
     //console.log(account3.publicKey);
-    const tx3 = await program.methods.createLargeAccount()
+    /*const tx3 = await program.methods.createLargeAccount()
       .accounts({
         signer: user.publicKey,
         programData: pda,
@@ -57,27 +86,51 @@ describe("experiments", () => {
       .rpc()
       .catch(e => console.error(e));
 
-      console.log("[Create large account] tx: ", tx3);
+      console.log("[Create large account] tx: ", tx3);*/
   });
 
   it("Large data program", async () => {
-    const lamports = await anchor.AnchorProvider.env().connection.getMinimumBalanceForRentExemption(150000);
-    console.log("SOL: ", lamports/LAMPORTS_PER_SOL);
+    // const lamports = await anchor.AnchorProvider.env().connection.getMinimumBalanceForRentExemption(150000);
+    // console.log("SOL: ", lamports/LAMPORTS_PER_SOL);
     // if(lamports > LAMPORTS_PER_SOL * 40)
     // {
     //   return;
     // }
 
-    const account2 = anchor.web3.Keypair.generate();
-    const tx2 = await program.methods.large()
-      .accounts({
-        signer: user.publicKey,
-        programData: account2.publicKey,
-        systemProgram: anchor.web3.SystemProgram.programId
-      })
-      .signers([account2])
-      .rpc();
+    // const account2 = anchor.web3.Keypair.generate();
+    // const tx2 = await program.methods.large()
+    //   .accounts({
+    //     signer: user.publicKey,
+    //     programData: account2.publicKey,
+    //     systemProgram: anchor.web3.SystemProgram.programId
+    //   })
+    //   .signers([account2])
+    //   .rpc();
 
-      console.log("[Large data program] tx: ", tx2);
+    //   console.log("[Large data program] tx: ", tx2);
   });
 });
+
+
+async function buildTransaction(
+	connection: Connection,
+	payer: PublicKey,
+	signers: Keypair[],
+	instructions: TransactionInstruction[],
+): Promise<VersionedTransaction> {
+	let blockhash = await connection
+		.getLatestBlockhash()
+		.then((res) => res.blockhash);
+
+	const messageV0 = new TransactionMessage({
+		payerKey: payer,
+		recentBlockhash: blockhash,
+		instructions,
+	}).compileToV0Message();
+
+	const tx = new VersionedTransaction(messageV0);
+
+	signers.forEach((s) => tx.sign([s]));
+
+	return tx;
+}

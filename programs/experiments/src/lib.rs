@@ -1,12 +1,11 @@
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program::system_instruction;
+use anchor_lang::solana_program::native_token::LAMPORTS_PER_SOL;
 
 declare_id!("7Vo3RPXvCm7BNgUeHHdYmvMSUUvaWWpyQ6MjiJrpfgFy");
 
 #[program]
 pub mod experiments {
-    use anchor_lang::solana_program::native_token::LAMPORTS_PER_SOL;
-
     use super::*;
 
     pub fn standard(ctx: Context<Standard>) -> Result<()> {
@@ -14,8 +13,6 @@ pub mod experiments {
     }
 
     pub fn create_large_account(ctx: Context<CreateLargeAccount>) -> Result<()> {
-
-        let lol = &mut ctx.accounts.program_data.load_init()?;
         
         // let from = ctx.accounts.signer.key;
         // let to = &ctx.accounts.program_data.key();
