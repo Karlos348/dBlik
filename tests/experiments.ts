@@ -27,26 +27,22 @@ describe("experiments", () => {
 
   it("Seed", async () => {
 
-    let accountKeys = anchor.web3.Keypair.generate();
+    const [pda, _] = await anchor.web3.PublicKey.findProgramAddressSync(
+      [Buffer.from("seed")],
+      program.programId
+    );
+
     const tx = await program.methods.withSeed()
     .accounts({
       signer: user.publicKey,
-      programData: accountKeys.publicKey,
+      programData: pda,
       systemProgram: anchor.web3.SystemProgram.programId
     })
-    .signers([accountKeys])
     .rpc()
     .catch(e => console.error(e));
 
-    console.log("[Created seeded acc] tx: ", tx);
-
-    let utf8Encode = new TextEncoder();
-  
-    const [pda] = await anchor.web3.PublicKey.findProgramAddressSync(
-      [utf8Encode.encode("simple_seed")],
-      anchor.web3.SystemProgram.programId
-    );
-    console.log("[Seeded acc] tx: ", pda);
+    console.log("[Account with seeded acc attached] tx: ", tx);
+    console.log("[Seeded acc] tx: ", pda.toString());
     
   });
 

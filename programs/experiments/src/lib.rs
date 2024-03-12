@@ -58,7 +58,7 @@ pub mod experiments {
 #[derive(Accounts)]
 //#[instruction(...)]
 pub struct Seeds<'info> {
-    #[account(init, payer = signer, seeds = [b"simple_seed"], bump, space = 8)]
+    #[account(init_if_needed, payer = signer, seeds = [b"seed"], bump, space = 150)]
     pub program_data: Account<'info, ProgramData>,
     #[account(mut)]
     pub signer: Signer<'info>,
