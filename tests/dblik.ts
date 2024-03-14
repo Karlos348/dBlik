@@ -34,6 +34,13 @@ describe("dblik", () => {
     console.log("tx: ", tx);
   });
 
+  it("Get accounts owned by program", async () => {
+    
+    let i = await anchor.AnchorProvider.env().connection.getProgramAccounts(program.programId);
+
+    i.forEach(x => console.log(x.pubkey.toString()));
+  });
+
 });
 
 
