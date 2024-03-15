@@ -8,7 +8,7 @@ pub struct InitializeCustomer<'info> {
         init_if_needed, 
         payer=signer, 
         space = 8 + size_of::<Customer>(), 
-        seeds=[SEED_CUSTOMER, signer.key().as_ref()], 
+        seeds=[SEED_CUSTOMER/* , signer.key().as_ref()*/], 
         bump)]
     pub customer: Account<'info, Customer>,
     pub system_program: Program<'info, System>,

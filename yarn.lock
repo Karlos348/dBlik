@@ -705,6 +705,11 @@ jayson@^4.1.0:
     uuid "^8.3.2"
     ws "^7.4.5"
 
+js-sha256@^0.11.0:
+  version "0.11.0"
+  resolved "https://registry.npmjs.org/js-sha256/-/js-sha256-0.11.0.tgz"
+  integrity sha512-6xNlKayMZvds9h1Y1VWc0fQHQ82BxTXizWPEtEeGvmOUYpBRy4gbWroHLpzowe6xiQhHpelCQiE7HEdznyBL9Q==
+
 js-yaml@4.1.0:
   version "4.1.0"
   resolved "https://registry.npmjs.org/js-yaml/-/js-yaml-4.1.0.tgz"
