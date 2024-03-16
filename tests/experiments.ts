@@ -6,7 +6,11 @@ import { Account, Connection, Keypair, LAMPORTS_PER_SOL, NONCE_ACCOUNT_LENGTH, P
 import { Buffer } from 'buffer';
 import {sha256} from '@noble/hashes/sha256';
 import {ed25519} from '@noble/curves/ed25519';
+import { hkdf } from '@noble/hashes/hkdf';
 import { assert } from "chai";
+import * as crypto from 'crypto';
+import * as BufferLayout from '@solana/buffer-layout';
+
 
 describe("experiments", () => {
 
@@ -14,6 +18,67 @@ describe("experiments", () => {
   const provider = anchor.AnchorProvider.env();
   const wallet = anchor.AnchorProvider.env().wallet;
   const program = anchor.workspace.Experiments as Program<Experiments>;
+
+  it("keypair creating v2 / ignore findProgramAddressSync implementation", async () => {
+
+    let buffer = Buffer.alloc(0);
+    let seeds = Array<Buffer>(Buffer.from("111111x"));
+
+    //const seedsWithNonce = seeds.concat(Buffer.from([254])); // hardcoded
+
+    let keypair: anchor.web3.Keypair;
+    for(let nonce = 255; nonce >= 0; nonce--)
+    {
+      try 
+      {
+        const seedsWithNonce = seeds.concat(Buffer.from([nonce]));
+        seedsWithNonce.forEach(function (seed) {
+          if (seed.length > 32) {
+            throw new TypeError(`Max seed length exceeded`);
+          }
+          buffer = Buffer.concat([buffer, toBuffer(seed)]);
+        });
+      
+        buffer = Buffer.concat([
+          buffer,
+          program.programId.toBuffer(),
+          Buffer.from('ProgramDerivedAddress')
+        ]);
+    
+        keypair = Keypair.fromSeed(sha256(buffer));
+        break;
+      } 
+      catch(err)
+      {
+        if (err instanceof TypeError) {
+          throw err;
+        }
+      }
+    }
+
+    let createAccountInstruction = anchor.web3.SystemProgram.createAccount({
+      fromPubkey: wallet.publicKey,
+      newAccountPubkey: keypair.publicKey,
+      lamports: await anchor.AnchorProvider.env().connection.getMinimumBalanceForRentExemption(
+        82
+      ),
+      space: 82,
+      programId: program.programId,
+    });
+
+    const createAccountTransaction = await buildTransaction(
+      anchor.AnchorProvider.env().connection,
+      wallet.publicKey,
+      [keypair],
+      [createAccountInstruction],
+    );
+
+    
+    wallet.signTransaction(createAccountTransaction);
+    const signature = await anchor.AnchorProvider.env().connection.sendTransaction(createAccountTransaction).catch(e => console.error(e));
+    console.log("[Create large account]\naccount: https://explorer.solana.com/address/"+keypair.publicKey+"?cluster=devnet\ntx: https://explorer.solana.com/tx/"+signature+"?cluster=devnet");
+
+  });
 
 it("keypair creating", async () => {
 
