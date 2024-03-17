@@ -2,6 +2,7 @@ use anchor_lang::prelude::*;
 use anchor_lang::solana_program::system_instruction;
 use anchor_lang::solana_program::native_token::LAMPORTS_PER_SOL;
 use std::mem::size_of;
+use anchor_lang::Discriminator;
 
 declare_id!("7Vo3RPXvCm7BNgUeHHdYmvMSUUvaWWpyQ6MjiJrpfgFy");
 
@@ -31,6 +32,55 @@ pub mod experiments {
     pub fn large(ctx: Context<Large>) -> Result<()> {
         Ok(())
     }
+
+    pub fn activate_manual(ctx: Context<ActivateManualAccount>) -> Result<()> {
+        let acc: ManualAccount = ManualAccount {
+            activated: true,
+            used_by: *ctx.accounts.signer.signer_key().unwrap()
+        };
+
+        let acc_vec = acc.try_to_vec().unwrap();
+
+        let mut mut_acc = (&mut ctx.accounts.account).try_borrow_mut_data()?;
+        
+        mut_acc[0..8].copy_from_slice(&ManualAccount::discriminator()[0..8]);
+        mut_acc[8..acc_vec.len()+8].copy_from_slice(&acc_vec[0..acc_vec.len()]);
+
+        Ok(())
+    }
+
+    pub fn use_manual(ctx: Context<UseManualAccount>) -> Result<()> {
+       msg!("used_by before: {}", ctx.accounts.account.used_by.to_string());
+       ctx.accounts.account.used_by = *ctx.accounts.signer.signer_key().unwrap();
+       msg!("used_by after: {}", ctx.accounts.account.used_by.to_string());
+       Ok(())
+    }
+}
+
+#[derive(Accounts)]
+pub struct ActivateManualAccount<'info> {
+    #[account(mut)]
+    pub signer: Signer<'info>,
+    /// CHECK: todo
+    #[account(mut)]
+    pub account: AccountInfo<'info>,
+    pub system_program: Program<'info, System>
+}
+
+#[derive(Accounts)]
+pub struct UseManualAccount<'info> {
+    #[account(mut)]
+    pub signer: Signer<'info>,
+    #[account(mut)]
+    pub account: Account<'info, ManualAccount>,
+    pub system_program: Program<'info, System>
+}
+
+#[account]
+#[derive(Default)]
+pub struct ManualAccount {
+    pub activated : bool,
+    pub used_by: Pubkey
 }
 
 #[derive(Accounts)]
