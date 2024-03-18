@@ -14,7 +14,7 @@ describe("manual", () => {
   const wallet = provider.wallet;
   const program = anchor.workspace.Experiments as Program<Experiments>;
 
-  const transactionAccountKeypair = createKeypair(["17032024", "104"], program.programId);
+  const transactionAccountKeypair = createKeypair(["18032024", "105"], program.programId);
 
   it("create transaction account", async () => {
 
@@ -27,7 +27,6 @@ describe("manual", () => {
     
   });
 
-  
   it("get account", async () => {
 
     const acc = await provider.connection.getAccountInfo(transactionAccountKeypair.publicKey);
@@ -65,6 +64,21 @@ describe("manual", () => {
     console.log("tx: ", tx);
   });
 
+  it("realloc transaction account", async () => {
+
+    const tx = await program.methods.reallocManual("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin vel elementum orci, vel fermentum tellus.")
+    .accounts({
+      signer: wallet.publicKey,
+      account: transactionAccountKeypair.publicKey,
+      systemProgram: anchor.web3.SystemProgram.programId,
+    })
+    //.signers([transactionAccountKeypair])
+    .rpc()
+    .catch(e => console.error(e));
+    
+    console.log("tx: ", tx);
+  });
+
 });
 
 async function createAccount(
@@ -73,13 +87,14 @@ async function createAccount(
   accountKeypair: Keypair,
   payerWallet: Wallet) : Promise<string | void>
 {
+  const accSize = 8+32+1+32+5;
   let createAccountInstruction = anchor.web3.SystemProgram.createAccount({
     fromPubkey: payerWallet.publicKey,
     newAccountPubkey: accountKeypair.publicKey,
     lamports: await connection.getMinimumBalanceForRentExemption(
-      200
+      accSize
     ),
-    space: 200,
+    space: accSize,
     programId: programId,
   });
 

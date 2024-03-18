@@ -1,6 +1,4 @@
 use anchor_lang::prelude::*;
-use anchor_lang::solana_program::system_instruction;
-use anchor_lang::solana_program::native_token::LAMPORTS_PER_SOL;
 use std::mem::size_of;
 use anchor_lang::Discriminator;
 
@@ -8,7 +6,6 @@ declare_id!("7Vo3RPXvCm7BNgUeHHdYmvMSUUvaWWpyQ6MjiJrpfgFy");
 
 #[program]
 pub mod experiments {
-    use anchor_lang::{accounts::{self, account, signer}, solana_program::system_program};
 
     use super::*;
 
@@ -34,27 +31,36 @@ pub mod experiments {
     }
 
     pub fn activate_manual(ctx: Context<ActivateManualAccount>) -> Result<()> {
-        let acc: ManualAccount = ManualAccount {
+        let acc = ManualAccount {
             activated: true,
-            used_by: *ctx.accounts.signer.signer_key().unwrap()
+            created_by: *ctx.accounts.signer.signer_key().unwrap(), 
+            updated_by: None,
+            message: String::new()
         };
-
-        let acc_vec = acc.try_to_vec().unwrap();
-
-        let mut mut_acc = (&mut ctx.accounts.account).try_borrow_mut_data()?;
-        
-        mut_acc[0..8].copy_from_slice(&ManualAccount::discriminator()[0..8]);
-        mut_acc[8..acc_vec.len()+8].copy_from_slice(&acc_vec[0..acc_vec.len()]);
-
+        let discriminator = ManualAccount::discriminator();
+        let data = (discriminator, acc.clone());
+        data.serialize(&mut *ctx.accounts.account.try_borrow_mut_data()?)?;
         Ok(())
     }
 
     pub fn use_manual(ctx: Context<UseManualAccount>) -> Result<()> {
-       msg!("used_by before: {}", ctx.accounts.account.used_by.to_string());
-       ctx.accounts.account.used_by = *ctx.accounts.signer.signer_key().unwrap();
-       msg!("used_by after: {}", ctx.accounts.account.used_by.to_string());
-       Ok(())
+        msg!("created_by: {}", ctx.accounts.account.created_by.to_string());
+
+        match ctx.accounts.account.updated_by 
+        {
+            Some(value) => msg!("updated_by before: {}", value.to_string()),
+            None => msg!("updated_by before: none") 
+        }
+        ctx.accounts.account.updated_by = Some(*ctx.accounts.signer.signer_key().unwrap());
+        msg!("updated_by after: {}", ctx.accounts.account.updated_by.unwrap().to_string());
+        Ok(())
     }
+
+    pub fn realloc_manual(ctx: Context<ReallocManualAccount>, message: String) -> Result<()> {
+        ctx.accounts.account.updated_by = Some(*ctx.accounts.signer.signer_key().unwrap());
+        ctx.accounts.account.message = message;
+        Ok(())
+     }
 }
 
 #[derive(Accounts)]
@@ -76,11 +82,26 @@ pub struct UseManualAccount<'info> {
     pub system_program: Program<'info, System>
 }
 
+#[derive(Accounts)]
+#[instruction(message: String)]
+pub struct ReallocManualAccount<'info> {
+    #[account(mut)]
+    pub signer: Signer<'info>,
+    #[account(
+        mut,
+        realloc = 8+32+1+32+5+message.len()*1, realloc::payer=signer, realloc::zero = false
+    )]
+    pub account: Account<'info, ManualAccount>,
+    pub system_program: Program<'info, System>
+}
+
 #[account]
 #[derive(Default)]
 pub struct ManualAccount {
     pub activated : bool,
-    pub used_by: Pubkey
+    pub created_by: Pubkey,
+    pub updated_by: Option<Pubkey>,
+    pub message: String
 }
 
 #[derive(Accounts)]
