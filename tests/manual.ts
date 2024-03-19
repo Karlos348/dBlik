@@ -14,7 +14,14 @@ describe("manual", () => {
   const wallet = provider.wallet;
   const program = anchor.workspace.Experiments as Program<Experiments>;
 
-  const transactionAccountKeypair = createKeypair(["18032024", "105"], program.programId);
+  const buffer = Buffer.concat([
+    Buffer.from("19032024"),
+    Buffer.from("100"),
+    program.programId.toBuffer()
+  ]);
+
+  const transactionAccountKeypair = Keypair.fromSeed(sha256(buffer));
+
 
   it("create transaction account", async () => {
 
@@ -42,7 +49,6 @@ describe("manual", () => {
       account: transactionAccountKeypair.publicKey,
       systemProgram: anchor.web3.SystemProgram.programId,
     })
-    //.signers([transactionAccountKeypair])
     .rpc()
     .catch(e => console.error(e));
     
@@ -57,7 +63,6 @@ describe("manual", () => {
       account: transactionAccountKeypair.publicKey,
       systemProgram: anchor.web3.SystemProgram.programId,
     })
-    //.signers([transactionAccountKeypair])
     .rpc()
     .catch(e => console.error(e));
     
@@ -72,7 +77,6 @@ describe("manual", () => {
       account: transactionAccountKeypair.publicKey,
       systemProgram: anchor.web3.SystemProgram.programId,
     })
-    //.signers([transactionAccountKeypair])
     .rpc()
     .catch(e => console.error(e));
     
@@ -115,41 +119,4 @@ async function createAccount(
   console.log("account: https://explorer.solana.com/address/"+accountKeypair.publicKey+"?cluster=devnet\ntx: https://explorer.solana.com/tx/"+signature+"?cluster=devnet");
 
   return signature;
-}
-
-function createKeypair(seeds: string[], programId: PublicKey) : Keypair
-{
-  let buffer = Buffer.alloc(0);
-  let seedsBuffer = seeds.map(Buffer.from);
-
-  for(let nonce = 255; nonce >= 0; nonce--)
-  {
-    try 
-    {
-      const seedsWithNonce = seedsBuffer.concat(Buffer.from([nonce]));
-      seedsWithNonce.forEach(function (seed) {
-        if (seed.length > 32) {
-          throw new TypeError(`Max seed length exceeded`);
-        }
-        buffer = Buffer.concat([buffer, seed]);
-      });
-    
-      buffer = Buffer.concat([
-        buffer,
-        programId.toBuffer(),
-        Buffer.from('ProgramDerivedAddress')
-      ]);
-  
-      return Keypair.fromSeed(sha256(buffer));
-    }
-    catch(err)
-    {
-      if (err instanceof TypeError) 
-      {
-        throw err;
-      }
-    }
-
-    throw new TypeError("");
-  }
 }
