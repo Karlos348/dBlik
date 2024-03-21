@@ -1,4 +1,4 @@
-use anchor_lang::prelude::*;
+use anchor_lang::{prelude::*, solana_program::clock};
 use std::mem::size_of;
 use anchor_lang::Discriminator;
 
@@ -40,6 +40,8 @@ pub mod experiments {
         let discriminator = ManualAccount::discriminator();
         let data = (discriminator, acc.clone());
         data.serialize(&mut *ctx.accounts.account.try_borrow_mut_data()?)?;
+        let timestamp: i64 = clock::Clock::get()?.unix_timestamp;
+        msg!("timestamp: {}", timestamp);
         Ok(())
     }
 

@@ -18,7 +18,7 @@ Distributed [BLIK](https://www.blik.com/)-like app using the Solana blockchain i
 [![Project Status: WIP – Work in Progress](https://img.shields.io/badge/Project%20Status-WIP-yellow.svg)](https://github.com/Karlos348/dBlik)
 
 ## Motivations
-The main goal is to learn about smart contracts and work in other languages than my native C#. The Solana blockchain was chosen rather accidentally, although the most important criteria were low transaction fees and popularity. I enjoy challenges, so I've chosen a topic I wasn't sure if it was possible to accomplish.
+The main goal is to learn about smart contracts and work in other languages than my native C#. The Solana blockchain was chosen rather accidentally, although the most important criteria were low transaction fees and popularity. I enjoy challenges, so I've chosen a topic I wasn't sure if it was even possible to accomplish.
 
 ## Overview
 
@@ -62,7 +62,3 @@ The only solution that comes to mind, besides comparing the transaction amount, 
 
 ## Setup
 TBD
-
-https://stackoverflow.com/questions/72037340/install-anchor-cli-on-windows-using-cargo
-
-https://www.anchor-lang.com/docs/installation
