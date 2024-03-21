@@ -1,16 +1,11 @@
 <div align="center">
 
-<div style="margin:5px;">
-    <a href="https://github.com/Karlos348/dBlik">
-        <img src="assets/logo.png" width="120" height="120"/>
-    </a>
-</div>
+<a href="https://github.com/Karlos348/dBlik"><img src="assets/logo.png" width="150" height="150"/></a>
 
-<h1 style="margin:10px;">
-dBlik 
-</h1>
+<h1>dBlik<div><br/></div></h1>
 
 Distributed [BLIK](https://www.blik.com/)-like app using the Solana blockchain infrastructure.
+
 </div>
 
 ---
