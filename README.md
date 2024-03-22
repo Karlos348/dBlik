@@ -2,7 +2,7 @@
 
 <a href="https://github.com/Karlos348/dBlik"><img src="assets/logo.png" width="150" height="150"/></a>
 
-<h1>dBlik<div><br/></div></h1>
+<h1>dBlik</h1>
 
 Distributed [BLIK](https://www.blik.com/)-like app using the Solana blockchain infrastructure.
 
@@ -17,7 +17,11 @@ The main goal is to learn about smart contracts and work in other languages than
 
 ## Overview
 
-![overview](assets/overview.png)
+<div align="center">
+
+![overview](assets/overview.svg)
+
+</div>
 
 ## Roadmap
 - [x] Preliminary research
@@ -35,7 +39,7 @@ The main goal is to learn about smart contracts and work in other languages than
 
 As it is known, my application relies on generating random codes, which is not feasible within the domain of blockchain. Additionally, all data on the blockchain is public. While I discovered solution like [Switchboard Randomness](https://docs.switchboard.xyz/randomness), which allows for providing VRF (Verifiable Random Function), it's too expensive for generating a one-time code.
 
-Therefore, I decided to generate the code off-chain.
+Therefore, I've decided to generate the code off-chain.
 
 ### Thousands of transactions at the same time
 
@@ -51,9 +55,9 @@ So, I've decided to use the standard method `anchor.web3.SystemProgram.createAcc
 
 ## Vulnerabilities
 
-Currently, I see one vulnerability, where a thief subscribes to changes on hundreds of thousands of Storage Accounts with pre-generated addresses and, after notification, sends a payment request.
+The attacker, by subscribing to changes in the program, can easly obtain the account address with transaction data. They can send a payment request without knowing the code.
 
-The only solution that comes to mind, besides comparing the transaction amount, is attaching custom information from the store, such as the name and internal transaction ID. However, this still requires caution from the user.
+The only solution that comes to mind, besides comparing the transaction amount, is attaching additional custom information from the store, such as the name and internal transaction ID. However, this still requires caution from the user.
 
 ## Setup
 TBD
