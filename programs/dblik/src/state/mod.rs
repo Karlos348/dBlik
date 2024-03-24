@@ -1,3 +1,3 @@
-pub mod customer;
+pub mod transaction;
 
-pub use customer::*;
+pub use transaction::*;
