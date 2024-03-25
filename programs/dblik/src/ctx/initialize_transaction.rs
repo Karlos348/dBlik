@@ -1,5 +1,6 @@
+use anchor_lang::Discriminator;
+
 use crate::*;
-use crate::state::transaction::TransactionAccount;
 
 #[derive(Accounts)]
 pub struct InitializeTransaction<'info> {
@@ -13,11 +14,7 @@ pub struct InitializeTransaction<'info> {
 
 impl<'info> InitializeTransaction<'info> {
     pub fn process(&mut self) -> Result<()> {
-
-        let discriminator = TransactionAccount::discriminator;
-        let data = (discriminator, /* todo */);
-        //data.serialize(&mut *ctx.accounts.account.try_borrow_mut_data()?)?;
-
+        
         Ok(())
     }
 }
