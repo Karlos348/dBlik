@@ -1,5 +1,3 @@
-use anchor_lang::Discriminator;
-
 use crate::*;
 
 #[derive(Accounts)]
@@ -14,7 +12,11 @@ pub struct InitializeTransaction<'info> {
 
 impl<'info> InitializeTransaction<'info> {
     pub fn process(&mut self) -> Result<()> {
+        let customer = self.signer.key();
+        let serialized_transaction = <anchor_lang::prelude::Account<'_, state::transaction::Transaction> as TransactionAccount>::new_serialized_transaction(customer)?;
+        let mut account_data = self.account.try_borrow_mut_data()?;
         
+        account_data[0..serialized_transaction.len()].copy_from_slice(&serialized_transaction[0..serialized_transaction.len()]);
         Ok(())
     }
 }
