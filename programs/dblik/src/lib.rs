@@ -16,6 +16,10 @@ pub mod dblik {
     pub fn init_transaction(ctx: Context<InitializeTransaction>) -> Result<()> {
         ctx.accounts.process()
     }
+
+    pub fn assign_store(ctx: Context<AssignStore>, amount: u64, message: String) -> Result<()> {
+        ctx.accounts.process(amount, message)
+    }
 }
 
 // #[error_code]

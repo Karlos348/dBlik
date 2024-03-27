@@ -15,6 +15,7 @@ pub struct Transaction {
 
 pub trait TransactionAccount {
     fn new_serialized_transaction(customer: Pubkey) -> Result<Vec<u8>>;
+    fn assign_store(&mut self, store: Pubkey, amount: u64, message: String) -> Result<()>;
 }
 
 impl TransactionAccount for Account<'_, Transaction> {
@@ -34,6 +35,30 @@ impl TransactionAccount for Account<'_, Transaction> {
         data.serialize(&mut serialized)?;
         Ok(serialized)
     }
+    
+    fn assign_store(&mut self, store: Pubkey, amount: u64, message: String) -> Result<()> {
+        
+        if self.state != TransactionState::Initialized
+        {
+            msg!("state");
+            return Ok(())
+        }
+
+        let now = clock::Clock::get()?.unix_timestamp;
+        if now < self.timestamp + 120
+        {
+            msg!("timestamp");
+            return Ok(())
+        }
+
+        // todo: prevent signing by the same user, check amount etc
+
+        self.store = store;
+        self.amount = amount;
+        self.message = message;
+        self.state = TransactionState::Pending;
+        Ok(())
+    }  
 }
 
 
@@ -42,7 +67,8 @@ pub enum TransactionState {
     Initialized,
     Pending,
     Succeed,
-    Expired
+    Expired,
+    Canceled
 }
 
 // impl TransactionState {

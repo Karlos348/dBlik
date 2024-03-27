@@ -7,6 +7,7 @@ import {sha256} from '@noble/hashes/sha256';
 import * as token from "@solana/spl-token";
 import { assert } from "chai";
 import { Keypair, PublicKey, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
+import { BN } from "bn.js";
 
 const provider = anchor.AnchorProvider.env();
 console.log("wallet public key: ", provider.wallet.publicKey);
@@ -18,8 +19,8 @@ const programId = program.programId;
 describe("dblik", () => {
   
   const buffer = Buffer.concat([
-    Buffer.from("26032024"),
-    Buffer.from("100"),
+    Buffer.from("27032024"),
+    Buffer.from("102"),
     program.programId.toBuffer()
   ]);
 
@@ -37,13 +38,24 @@ describe("dblik", () => {
     const tx = await program.methods.initTransaction()
     .accounts({
       signer: user.publicKey,
-      account: keys.publicKey,
+      transaction: keys.publicKey,
       systemProgram: anchor.web3.SystemProgram.programId,
     })
     .rpc()
     .catch(e => console.error(e));
 
     console.log("tx: ", tx);
+
+    const tx2 = await program.methods.assignStore(new BN(300), "message-111111")
+    .accounts({
+      signer: user.publicKey,
+      transaction: keys.publicKey,
+      systemProgram: anchor.web3.SystemProgram.programId,
+    })
+    .rpc()
+    .catch(e => console.error(e));
+
+    console.log("tx2: ", tx2);
 
     console.log(JSON.stringify(await provider.connection.getAccountInfo(keys.publicKey)));
   });
