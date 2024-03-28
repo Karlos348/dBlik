@@ -1,6 +1,8 @@
 use anchor_lang::{prelude::*, solana_program::clock};
 use std::mem::size_of;
 use anchor_lang::Discriminator;
+use std::str::FromStr;
+use anchor_lang::solana_program::{native_token::LAMPORTS_PER_SOL, system_instruction};
 
 declare_id!("7Vo3RPXvCm7BNgUeHHdYmvMSUUvaWWpyQ6MjiJrpfgFy");
 
@@ -8,6 +10,24 @@ declare_id!("7Vo3RPXvCm7BNgUeHHdYmvMSUUvaWWpyQ6MjiJrpfgFy");
 pub mod experiments {
 
     use super::*;
+
+    pub fn transfer(ctx: Context<Transfer>) -> Result<()> {
+        
+        let from = Pubkey::from_str("5ctBcsuKYt19mBqPj6Sfbz6cfv6gRFu6Gm5G4hiK8Gv8").unwrap();
+        let to = Pubkey::from_str("ETG6ga5VJj8TZkpUYRHSdp4rUPKQQ1EtiENPTaxfYmsx").unwrap();
+        let transfer_instruction = system_instruction::transfer(&from, &to, 1*LAMPORTS_PER_SOL);
+
+        anchor_lang::solana_program::program::invoke_signed(
+            &transfer_instruction,
+            &[
+                ctx.accounts.signer.to_account_info(),
+                ctx.accounts.store.to_account_info()
+            ],
+            &[],
+        )?;
+
+        Ok(())
+    }
 
     pub fn with_seed(ctx: Context<Seeds>) -> Result<()> {
         Ok(())
@@ -131,6 +151,15 @@ pub struct Seeds<'info> {
     pub program_data: Account<'info, ProgramData>,
     #[account(mut)]
     pub signer: Signer<'info>,
+    pub system_program: Program<'info, System>
+}
+
+#[derive(Accounts)]
+pub struct Transfer<'info> {
+    #[account(mut)]
+    pub signer: Signer<'info>,
+    #[account(mut)]
+    pub store: SystemAccount<'info>,
     pub system_program: Program<'info, System>
 }
 

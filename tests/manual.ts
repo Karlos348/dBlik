@@ -22,6 +22,38 @@ describe("manual", () => {
 
   const transactionAccountKeypair = Keypair.fromSeed(sha256(buffer));
 
+  it("transfer", async () => {
+
+    const tx = await program.methods.transfer()
+    .accounts({
+      signer: wallet.publicKey,
+      store: new anchor.web3.PublicKey(
+        "ETG6ga5VJj8TZkpUYRHSdp4rUPKQQ1EtiENPTaxfYmsx"
+      ),
+      systemProgram: anchor.web3.SystemProgram.programId,
+    })
+    .rpc()
+    .catch(e => console.error(e));
+    
+    console.log("tx: ", tx);
+    
+  });
+
+  it("sub", async () => {
+
+    (async () => {
+      const publicKey = new anchor.web3.PublicKey(
+        "7Vo3RPXvCm7BNgUeHHdYmvMSUUvaWWpyQ6MjiJrpfgFy"
+      );
+      provider.connection.onProgramAccountChange(
+        publicKey,
+        (updatedProgramInfo, context) =>
+          console.log("Updated program info: ", updatedProgramInfo),
+        "confirmed"
+      );
+    })();
+    
+  });
 
   it("create transaction account", async () => {
 
@@ -36,8 +68,8 @@ describe("manual", () => {
 
   it("get account", async () => {
 
-    const acc = await provider.connection.getAccountInfo(transactionAccountKeypair.publicKey);
-    console.log(JSON.stringify(acc));
+  const acc = await provider.connection.getAccountInfo(transactionAccountKeypair.publicKey);
+  console.log(JSON.stringify(acc));
     
   });
 
@@ -54,7 +86,7 @@ describe("manual", () => {
     
     console.log("tx: ", tx);
   });
-
+  
   it("use transaction account", async () => {
 
     const tx = await program.methods.useManual()
