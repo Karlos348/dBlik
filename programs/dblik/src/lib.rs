@@ -20,6 +20,10 @@ pub mod dblik {
     pub fn assign_store(ctx: Context<AssignStore>, amount: u64, message: String) -> Result<()> {
         ctx.accounts.process(amount, message)
     }
+
+    pub fn confirm_transaction(ctx: Context<ConfirmTransaction>) -> Result<()> {
+        ctx.accounts.process()
+    }
 }
 
 // #[error_code]
