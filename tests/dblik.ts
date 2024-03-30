@@ -8,6 +8,8 @@ import * as token from "@solana/spl-token";
 import { assert } from "chai";
 import { Keypair, PublicKey, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
 import { BN } from "bn.js";
+import { publicKey, u64, bool, u128 } from '@solana/buffer-layout-utils';
+import { u32, u8, struct, cstr, utf8, seq, u48 } from '@solana/buffer-layout';
 
 const provider = anchor.AnchorProvider.env();
 console.log("wallet public key: ", provider.wallet.publicKey);
@@ -16,39 +18,52 @@ const user = provider.wallet;
 const program = anchor.workspace.Dblik as Program<Dblik>;
 const programId = program.programId;
 
-describe("dblik", () => {
-  
+describe("dblik", /* async */ () => {
+
   const buffer = Buffer.concat([
-    Buffer.from("27032024"),
-    Buffer.from("102"),
+    Buffer.from("30032024"),
+    Buffer.from("105"),
     program.programId.toBuffer()
   ]);
-
+  
   const keys = web3.Keypair.fromSeed(sha256(buffer));
+
+  // const acc = await provider.connection.getAccountInfo(keys.publicKey);
+  // const data = TransactionLayout.decode(acc.data);
+  // console.log("Decoded:");
+  // console.log("amount:", data.amount);
+  // console.log("customer:", data.customer.toString());
+  // console.log("message:", data.message.toString());
+  // console.log("state:", data.state);
+  // console.log("store:", data.store.toString());
+  // console.log("timestamp:", data.timestamp);
+  // return;
+
 
   it("Init transaction", async () => {
     
     const createAccountRsp = await createAccount(provider.connection, 
-      program.programId,
-      keys,
-      user);
+    program.programId,
+    keys,
+    user);
 
     console.log(JSON.stringify(await provider.connection.getAccountInfo(keys.publicKey)));
 
     const tx = await program.methods.initTransaction()
     .accounts({
-      signer: user.publicKey,
-      transaction: keys.publicKey,
-      systemProgram: anchor.web3.SystemProgram.programId,
+    signer: user.publicKey,
+    transaction: keys.publicKey,
+    systemProgram: anchor.web3.SystemProgram.programId,
     })
     .rpc()
     .catch(e => console.error(e));
 
     console.log("tx: ", tx);
 
-    const tx2 = await program.methods.assignStore(new BN(300), "message-111111")
-    .accounts({
+    const tx2 = await program.methods.assignStore(new BN(0.003*web3.LAMPORTS_PER_SOL), "message-111111")
+        .accounts({
       signer: user.publicKey,
+      //store: 
       transaction: keys.publicKey,
       systemProgram: anchor.web3.SystemProgram.programId,
     })
@@ -68,7 +83,7 @@ async function createAccount(
   accountKeypair: Keypair,
   payerWallet: Wallet) : Promise<string | void>
 {
-  const accSize = 120;
+  const accSize = 93;
   let createAccountInstruction = anchor.web3.SystemProgram.createAccount({
     fromPubkey: payerWallet.publicKey,
     newAccountPubkey: accountKeypair.publicKey,
@@ -97,3 +112,24 @@ async function createAccount(
 
   return signature;
 }
+
+export interface RawTransaction {
+  discriminator: bigint;
+  customer: PublicKey;
+  timestamp: number;
+  state: number;
+  store: PublicKey;
+  amount: number;
+  message: number[]
+}
+
+export const TransactionLayout = struct<RawTransaction>([
+  u64('discriminator'),
+  publicKey('customer'),
+  u64('timestamp'),
+  u8('state'),
+  publicKey('store'),
+  u64('amount'),
+  u32('string-prefix'),
+  seq(u8(), 5, "message")
+]);
