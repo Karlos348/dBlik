@@ -16,7 +16,15 @@ impl<'info> InitializeTransaction<'info> {
         let serialized_transaction = <anchor_lang::prelude::Account<'_, state::transaction::Transaction> as TransactionAccount>::new_serialized_transaction(customer)?;
         let mut account_data = self.transaction.try_borrow_mut_data()?;
         
+        require!(serialized_transaction.len() <= account_data.len(), InitializeTransactionErrors::ImproperlyCreatedAccount);
+
         account_data[0..serialized_transaction.len()].copy_from_slice(&serialized_transaction[0..serialized_transaction.len()]);
         Ok(())
     }
+}
+
+#[error_code]
+pub enum InitializeTransactionErrors {
+    #[msg("Improperly created account")]
+    ImproperlyCreatedAccount
 }

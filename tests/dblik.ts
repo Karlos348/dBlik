@@ -60,7 +60,7 @@ describe("dblik", /* async */ () => {
 
     console.log("tx: ", tx);
 
-    const tx2 = await program.methods.assignStore(new BN(0.003*web3.LAMPORTS_PER_SOL), "message-111111")
+    const tx2 = await program.methods.requestPayment(new BN(0.003*web3.LAMPORTS_PER_SOL), "message-111111")
         .accounts({
       signer: user.publicKey,
       //store: 

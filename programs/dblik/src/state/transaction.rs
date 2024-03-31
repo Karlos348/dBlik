@@ -37,21 +37,11 @@ impl TransactionAccount for Account<'_, Transaction> {
     }
     
     fn assign_store(&mut self, store: Pubkey, amount: u64, message: String) -> Result<()> {
-        
-        if self.state != TransactionState::Initialized
-        {
-            msg!("state");
-            return Ok(())
-        }
 
         let now = clock::Clock::get()?.unix_timestamp;
-        if now < self.timestamp + 120
-        {
-            msg!("timestamp");
-            return Ok(())
-        }
-
-        // todo: prevent signing by the same user, check amount etc
+        require!(self.state == TransactionState::Initialized, TransactionErrors::InvalidTransactionState);
+        require!(now <= self.timestamp + 120 /* 2 minutes */, TransactionErrors::TransactionExpired);
+        require!(self.customer != store, TransactionErrors::AccountsConflict);
 
         self.store = store;
         self.amount = amount;
@@ -69,6 +59,16 @@ pub enum TransactionState {
     Succeed,
     Expired,
     Canceled
+}
+
+#[error_code]
+pub enum TransactionErrors {
+    #[msg("Invalid transaction state")]
+    InvalidTransactionState,
+    #[msg("Transaction expired")]
+    TransactionExpired,
+    #[msg("Accounts cannot be the same")]
+    AccountsConflict
 }
 
 // impl TransactionState {

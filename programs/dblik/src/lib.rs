@@ -17,7 +17,7 @@ pub mod dblik {
         ctx.accounts.process()
     }
 
-    pub fn assign_store(ctx: Context<AssignStore>, amount: u64, message: String) -> Result<()> {
+    pub fn request_payment(ctx: Context<RequestPayment>, amount: u64, message: String) -> Result<()> {
         ctx.accounts.process(amount, message)
     }
 
@@ -25,9 +25,3 @@ pub mod dblik {
         ctx.accounts.process()
     }
 }
-
-// #[error_code]
-// pub enum Errors {
-//     #[msg("Invalid code")]
-//     InvalidCode
-// }
