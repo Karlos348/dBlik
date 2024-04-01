@@ -21,8 +21,8 @@ const programId = program.programId;
 describe("dblik", /* async */ () => {
 
   const buffer = Buffer.concat([
-    Buffer.from("30032024"),
-    Buffer.from("105"),
+    Buffer.from("01042024"),
+    Buffer.from("100"),
     program.programId.toBuffer()
   ]);
   
@@ -49,6 +49,8 @@ describe("dblik", /* async */ () => {
 
     console.log(JSON.stringify(await provider.connection.getAccountInfo(keys.publicKey)));
 
+    return;
+
     const tx = await program.methods.initTransaction()
     .accounts({
     signer: user.publicKey,
@@ -59,11 +61,11 @@ describe("dblik", /* async */ () => {
     .catch(e => console.error(e));
 
     console.log("tx: ", tx);
+    return;
 
     const tx2 = await program.methods.requestPayment(new BN(0.003*web3.LAMPORTS_PER_SOL), "message-111111")
         .accounts({
       signer: user.publicKey,
-      //store: 
       transaction: keys.publicKey,
       systemProgram: anchor.web3.SystemProgram.programId,
     })
@@ -71,11 +73,33 @@ describe("dblik", /* async */ () => {
     .catch(e => console.error(e));
 
     console.log("tx2: ", tx2);
+    return;
+
+    const store = await getStorePubkey(provider.connection, keys.publicKey);
+    console.log(store.toString());
+
+    const tx3 = program.methods.confirmTransaction()
+    .accounts({
+      signer: user.publicKey,
+      transaction: keys.publicKey,
+      store: store
+    })
+    .rpc()
+    .catch(e => console.error(e));
+
+    console.log("tx3: ", tx3);
+    return;
 
     console.log(JSON.stringify(await provider.connection.getAccountInfo(keys.publicKey)));
   });
 
 });
+
+async function getStorePubkey(connection: anchor.web3.Connection, account: PublicKey) {
+  const acc = await provider.connection.getAccountInfo(account);
+  const data = TransactionLayout.decode(acc.data);
+  return data.store;
+}
 
 async function createAccount(
   connection: anchor.web3.Connection, 

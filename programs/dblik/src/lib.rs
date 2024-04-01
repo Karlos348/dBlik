@@ -1,6 +1,4 @@
 use anchor_lang::prelude::*;
-use anchor_lang::solana_program::system_program;
-use std::mem::size_of;
 pub mod state;
 pub use state::*; 
 pub mod ctx;

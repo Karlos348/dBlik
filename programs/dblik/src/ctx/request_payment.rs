@@ -1,5 +1,4 @@
 use crate::*;
-use std::mem::size_of;
 
 #[derive(Accounts)]
 #[instruction(amount: u64, message: String)]
@@ -8,7 +7,7 @@ pub struct RequestPayment<'info> {
     pub signer: Signer<'info>,
     #[account(
         mut,
-        realloc = 8 + size_of::<Transaction>() + message.len(), 
+        realloc = 93 + message.len(), 
         realloc::payer=signer, 
         realloc::zero = false
     )]
@@ -18,18 +17,15 @@ pub struct RequestPayment<'info> {
 
 impl<'info> RequestPayment<'info> {
     pub fn process(&mut self, amount: u64, message: String) -> Result<()> {  
-        let store = *self.signer.signer_key().unwrap();
-        let _ = self.transaction.assign_store(store, amount, message);
-        Ok(())
+        let store = self.signer.signer_key();
+        require!(store.is_some(), RequestPaymentErrors::NoStoreKey);
+
+        self.transaction.assign_store(*store.unwrap(), amount, message)
     }
 }
 
 #[error_code]
 pub enum RequestPaymentErrors {
-    #[msg("Invalid customer key")]
-    InvalidCustomerKey,
-    #[msg("Invalid store key")]
-    InvalidStoreKey,
-    #[msg("Insufficient balance")]
-    InsufficientBalance,
+    #[msg("No store key")]
+    NoStoreKey
 }

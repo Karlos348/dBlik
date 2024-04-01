@@ -1,7 +1,5 @@
-use anchor_lang::solana_program::system_instruction;
-
 use crate::*;
-use std::mem::size_of;
+use anchor_lang::solana_program::system_instruction;
 
 #[derive(Accounts)]
 pub struct ConfirmTransaction<'info> {
@@ -16,24 +14,9 @@ pub struct ConfirmTransaction<'info> {
 
 impl<'info> ConfirmTransaction<'info> {
     pub fn process(&mut self) -> Result<()> {
-
-        if self.signer.key() != self.transaction.customer
-        {
-            msg!("invalid customer key");
-            return Ok(())
-        }
-
-        if self.store.key() != self.transaction.store
-        {
-            msg!("invalid store key");
-            return Ok(())
-        }
-
-        if self.signer.lamports() < self.transaction.amount
-        {
-            msg!("insufficient balance");
-            return Ok(())
-        }
+        require!(self.signer.key() == self.transaction.customer, ConfirmTransactionErrors::CustomerKeyConflict);
+        require!(self.store.key() == self.transaction.store, ConfirmTransactionErrors::StoreKeyConflict);
+        require!(self.signer.lamports() >= self.transaction.amount, ConfirmTransactionErrors::InsufficientBalance);
 
         let transfer_instruction = system_instruction::transfer(
             &self.transaction.customer,
@@ -52,4 +35,14 @@ impl<'info> ConfirmTransaction<'info> {
         self.transaction.state = TransactionState::Succeed;
         Ok(())
     }
+}
+
+#[error_code]
+pub enum ConfirmTransactionErrors {
+    #[msg("Customer key conflict")]
+    CustomerKeyConflict,
+    #[msg("Store key conflict")]
+    StoreKeyConflict,
+    #[msg("Insufficient balance")]
+    InsufficientBalance,
 }

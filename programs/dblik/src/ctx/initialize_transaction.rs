@@ -12,8 +12,10 @@ pub struct InitializeTransaction<'info> {
 
 impl<'info> InitializeTransaction<'info> {
     pub fn process(&mut self) -> Result<()> {
-        let customer = self.signer.key();
-        let serialized_transaction = <anchor_lang::prelude::Account<'_, state::transaction::Transaction> as TransactionAccount>::new_serialized_transaction(customer)?;
+        let customer = self.signer.signer_key();
+        require!(customer.is_some(), InitializeTransactionErrors::NoCustomerKey);
+
+        let serialized_transaction = <anchor_lang::prelude::Account<'_, state::transaction::Transaction> as TransactionAccount>::new_serialized_transaction(*customer.unwrap())?;
         let mut account_data = self.transaction.try_borrow_mut_data()?;
         
         require!(serialized_transaction.len() <= account_data.len(), InitializeTransactionErrors::ImproperlyCreatedAccount);
@@ -26,5 +28,7 @@ impl<'info> InitializeTransaction<'info> {
 #[error_code]
 pub enum InitializeTransactionErrors {
     #[msg("Improperly created account")]
-    ImproperlyCreatedAccount
+    ImproperlyCreatedAccount,
+    #[msg("No customer key")]
+    NoCustomerKey,
 }
