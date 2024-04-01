@@ -26,8 +26,10 @@ The main goal is to learn about smart contracts and work in other languages than
 ## Roadmap
 - [x] Preliminary research
 - [ ] MVP
-    - [ ] On-chain program
+    - [x] On-chain program with basic functionality
+    - [ ] Cover the program with tests
     - [ ] Local demo
+    - [ ] Additional functions, such as refunding overdue funds in Transaction Account
 - [ ] Optional
     - [ ] Public demo
     - [ ] Integration with chosen e-commerce platform
