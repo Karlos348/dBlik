@@ -1,4 +1,5 @@
 use crate::*;
+use self::consts::BASIC_TRANSACTION_SIZE;
 
 #[derive(Accounts)]
 #[instruction(amount: u64, message: String)]
@@ -7,7 +8,7 @@ pub struct RequestPayment<'info> {
     pub signer: Signer<'info>,
     #[account(
         mut,
-        realloc = 93 + message.len(), 
+        realloc = BASIC_TRANSACTION_SIZE + message.len(), 
         realloc::payer=signer, 
         realloc::zero = false
     )]

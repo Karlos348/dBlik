@@ -29,9 +29,9 @@ The main goal is to learn about smart contracts and work in other languages than
     - [x] On-chain program with basic functionality
     - [ ] Cover the program with tests
     - [ ] Local demo
-    - [ ] Additional functions, such as refunding overdue funds in Transaction Account
 - [ ] Optional
     - [ ] Public demo
+    - [ ] Additional features, such as refunding overdue funds in the Transaction Account or cancelling transactions
     - [ ] Integration with chosen e-commerce platform
     - [ ] Mobile application
     - [ ] Reusing Storage Accounts to reduce transaction fees

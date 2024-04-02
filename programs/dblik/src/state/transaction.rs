@@ -1,7 +1,8 @@
+use crate::consts::TRANSACTION_EXPIRATION_TIME_IN_SECONDS;
 use crate::*;
 use anchor_lang::Discriminator;
 use anchor_lang::solana_program::clock;
-use std::str::FromStr;
+use self::consts::DEFAULT_PUBKEY;
 
 #[account]
 pub struct Transaction {
@@ -26,7 +27,7 @@ impl TransactionAccount for Account<'_, Transaction> {
             customer,
             timestamp,
             state: TransactionState::Initialized,
-            store: Pubkey::from_str("11111111111111111111111111111111").unwrap(),
+            store: DEFAULT_PUBKEY,
             amount: 0,
             message: String::new(),
         };
@@ -40,7 +41,7 @@ impl TransactionAccount for Account<'_, Transaction> {
 
         let now = clock::Clock::get()?.unix_timestamp;
         require!(self.state == TransactionState::Initialized, TransactionErrors::InvalidTransactionState);
-        require!(now <= self.timestamp + 120 /* 2 minutes */, TransactionErrors::TransactionExpired);
+        require!(now <= self.timestamp + TRANSACTION_EXPIRATION_TIME_IN_SECONDS, TransactionErrors::TransactionExpired);
         require!(self.customer != store, TransactionErrors::AccountsConflict);
 
         self.store = store;
