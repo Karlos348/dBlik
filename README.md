@@ -31,7 +31,8 @@ The main goal is to learn about smart contracts and work in other languages than
     - [ ] Local demo
 - [ ] Optional
     - [ ] Public demo
-    - [ ] Additional features, such as refunding overdue funds in the Transaction Account or cancelling transactions
+    - [ ] Additional features, such as ~~refunding overdue funds in the Transaction Account~~ or cancelling transactions
+    - [x] Refunding overdue funds in the Transaction Account
     - [ ] Integration with chosen e-commerce platform
     - [ ] Mobile application
     - [ ] Reusing Storage Accounts to reduce transaction fees

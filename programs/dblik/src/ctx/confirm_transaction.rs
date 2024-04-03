@@ -18,6 +18,9 @@ impl<'info> ConfirmTransaction<'info> {
         require!(self.store.key() == self.transaction.store, ConfirmTransactionErrors::StoreKeyConflict);
         require!(self.signer.lamports() >= self.transaction.amount, ConfirmTransactionErrors::InsufficientBalance);
 
+        let store_account_info = self.store.to_account_info();
+        let customer_account_info = self.signer.to_account_info();
+
         let transfer_instruction = system_instruction::transfer(
             &self.transaction.customer,
             &self.transaction.store,
@@ -26,11 +29,18 @@ impl<'info> ConfirmTransaction<'info> {
         anchor_lang::solana_program::program::invoke_signed(
             &transfer_instruction,
             &[
-                self.signer.to_account_info(),
-                self.store.to_account_info()
+                customer_account_info,
+                store_account_info
             ],
             &[],
         )?;
+
+        let amount = self.transaction.get_lamports();
+        let transaction_account_info = self.transaction.to_account_info();
+        let customer_account_info = self.signer.to_account_info();
+
+        **transaction_account_info.try_borrow_mut_lamports()? -= amount;
+        **customer_account_info.try_borrow_mut_lamports()? += amount;
 
         self.transaction.state = TransactionState::Succeed;
         Ok(())
