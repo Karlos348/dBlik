@@ -1,5 +1,5 @@
 use crate::*;
-use anchor_lang::solana_program::system_instruction;
+use anchor_lang::solana_program::{program, system_instruction};
 
 #[derive(Accounts)]
 pub struct ConfirmTransaction<'info> {
@@ -26,7 +26,7 @@ impl<'info> ConfirmTransaction<'info> {
             &self.transaction.store,
             self.transaction.amount);
 
-        anchor_lang::solana_program::program::invoke_signed(
+        program::invoke_signed(
             &transfer_instruction,
             &[
                 customer_account_info,
