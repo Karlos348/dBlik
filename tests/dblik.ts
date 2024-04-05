@@ -21,49 +21,22 @@ const programId = program.programId;
 describe("dblik", /* async */ () => {
 
   const buffer = Buffer.concat([
-    Buffer.from("01042024"),
+    Buffer.from("05042024"),
     Buffer.from("100"),
     program.programId.toBuffer()
   ]);
   
   const keys = web3.Keypair.fromSeed(sha256(buffer));
 
-  // const acc = await provider.connection.getAccountInfo(keys.publicKey);
-  // const data = TransactionLayout.decode(acc.data);
-  // console.log("Decoded:");
-  // console.log("amount:", data.amount);
-  // console.log("customer:", data.customer.toString());
-  // console.log("message:", data.message.toString());
-  // console.log("state:", data.state);
-  // console.log("store:", data.store.toString());
-  // console.log("timestamp:", data.timestamp);
-  // return;
-
-
   it("Init transaction", async () => {
     
-    const createAccountRsp = await createAccount(provider.connection, 
-    program.programId,
-    keys,
-    user);
+    const _ = await initializeTransactionAccount(provider.connection, 
+      program.programId,
+      keys,
+      user);
+    await printTransaction(provider.connection, keys.publicKey);
 
-    console.log(JSON.stringify(await provider.connection.getAccountInfo(keys.publicKey)));
-
-    return;
-
-    const tx = await program.methods.initTransaction()
-    .accounts({
-    signer: user.publicKey,
-    transaction: keys.publicKey,
-    systemProgram: anchor.web3.SystemProgram.programId,
-    })
-    .rpc()
-    .catch(e => console.error(e));
-
-    console.log("tx: ", tx);
-    return;
-
-    const tx2 = await program.methods.requestPayment(new BN(0.003*web3.LAMPORTS_PER_SOL), "message-111111")
+    const requestPaymentTx = await program.methods.requestPayment(new BN(0.003*web3.LAMPORTS_PER_SOL), "message-111111")
         .accounts({
       signer: user.publicKey,
       transaction: keys.publicKey,
@@ -72,42 +45,60 @@ describe("dblik", /* async */ () => {
     .rpc()
     .catch(e => console.error(e));
 
-    console.log("tx2: ", tx2);
-    return;
+    console.log("requestPaymentTx: ", requestPaymentTx);
+    await printTransaction(provider.connection, keys.publicKey);
 
-    const store = await getStorePubkey(provider.connection, keys.publicKey);
-    console.log(store.toString());
+    const transaction = await getTransaction(provider.connection, keys.publicKey);
 
-    const tx3 = program.methods.confirmTransaction()
+    const confirmTransactionTx = await program.methods.confirmTransaction()
     .accounts({
       signer: user.publicKey,
       transaction: keys.publicKey,
-      store: store
+      store: transaction.store
     })
     .rpc()
     .catch(e => console.error(e));
 
-    console.log("tx3: ", tx3);
-    return;
-
-    console.log(JSON.stringify(await provider.connection.getAccountInfo(keys.publicKey)));
+    console.log("confirmTransactionTx: ", confirmTransactionTx);
+    await printTransaction(provider.connection, keys.publicKey);
   });
 
 });
 
-async function getStorePubkey(connection: anchor.web3.Connection, account: PublicKey) {
+async function getTransaction(connection: anchor.web3.Connection, account: PublicKey) {
   const acc = await provider.connection.getAccountInfo(account);
-  const data = TransactionLayout.decode(acc.data);
-  return data.store;
+
+  const data = struct<RawTransaction>([
+  u64('discriminator'),
+  publicKey('customer'),
+  u64('timestamp'),
+  u8('state'),
+  publicKey('store'),
+  u64('amount'),
+  u32('string-prefix'),
+  seq(u8(), acc.data.byteLength-93, "message")
+]).decode(acc.data);
+  return data;
 }
 
-async function createAccount(
+async function printTransaction(connection: anchor.web3.Connection, account: PublicKey)
+{
+  const data = await getTransaction(connection, account);
+  console.log("amount:", data.amount);
+  console.log("customer:", data.customer.toString());
+  console.log("message:", data.message.toString());
+  console.log("state:", data.state);
+  console.log("store:", data.store.toString());
+  console.log("timestamp:", data.timestamp);
+}
+
+async function initializeTransactionAccount(
   connection: anchor.web3.Connection, 
   programId: PublicKey, 
   accountKeypair: Keypair,
   payerWallet: Wallet) : Promise<string | void>
 {
-  const accSize = 93;
+  const accSize = 93+10;
   let createAccountInstruction = anchor.web3.SystemProgram.createAccount({
     fromPubkey: payerWallet.publicKey,
     newAccountPubkey: accountKeypair.publicKey,
@@ -115,15 +106,23 @@ async function createAccount(
       accSize
     ),
     space: accSize,
-    programId: programId,
+    programId: programId
   });
+
+  const initTransactionInstruction = await program.methods.initTransaction()
+    .accounts({
+    signer: user.publicKey,
+    transaction: accountKeypair.publicKey,
+    systemProgram: anchor.web3.SystemProgram.programId,
+    })
+    .instruction();
 
   let blockhash = await connection.getLatestBlockhash().then(res => res.blockhash);
 
 	const messageV0 = new TransactionMessage({
 		payerKey: payerWallet.publicKey,
 		recentBlockhash: blockhash,
-    instructions: [createAccountInstruction]
+    instructions: [createAccountInstruction, initTransactionInstruction],
 	}).compileToV0Message();
 
 	const tx = new VersionedTransaction(messageV0);
@@ -132,7 +131,7 @@ async function createAccount(
 
   const signature = await connection.sendTransaction(tx).catch(e => console.error(e));
 
-  console.log("account: https://explorer.solana.com/address/"+accountKeypair.publicKey+"?cluster=devnet\ntx: https://explorer.solana.com/tx/"+signature+"?cluster=devnet");
+  console.log("Account: https://explorer.solana.com/address/"+accountKeypair.publicKey+"?cluster=devnet\nTx: https://explorer.solana.com/tx/"+signature+"?cluster=devnet");
 
   return signature;
 }
@@ -146,14 +145,3 @@ export interface RawTransaction {
   amount: number;
   message: number[]
 }
-
-export const TransactionLayout = struct<RawTransaction>([
-  u64('discriminator'),
-  publicKey('customer'),
-  u64('timestamp'),
-  u8('state'),
-  publicKey('store'),
-  u64('amount'),
-  u32('string-prefix'),
-  seq(u8(), 5, "message")
-]);
