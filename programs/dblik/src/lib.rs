@@ -24,4 +24,8 @@ pub mod dblik {
     pub fn confirm_transaction(ctx: Context<ConfirmTransaction>) -> Result<()> {
         ctx.accounts.process()
     }
+
+    pub fn cancel_transaction(ctx: Context<CancelTransaction>) -> Result<()> {
+        ctx.accounts.process()
+    }
 }

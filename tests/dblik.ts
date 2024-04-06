@@ -21,7 +21,7 @@ const programId = program.programId;
 describe("dblik", /* async */ () => {
 
   const buffer = Buffer.concat([
-    Buffer.from("05042024"),
+    Buffer.from("06042024"),
     Buffer.from("100"),
     program.programId.toBuffer()
   ]);
@@ -61,6 +61,15 @@ describe("dblik", /* async */ () => {
 
     console.log("confirmTransactionTx: ", confirmTransactionTx);
     await printTransaction(provider.connection, keys.publicKey);
+
+    const cancelTransactionTx = await program.methods.cancelTransaction()
+        .accounts({
+      signer: user.publicKey,
+      transaction: keys.publicKey,
+      systemProgram: anchor.web3.SystemProgram.programId,
+    })
+    .rpc()
+    .catch(e => console.error(e));
   });
 
 });

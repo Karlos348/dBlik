@@ -14,9 +14,10 @@ pub struct ConfirmTransaction<'info> {
 
 impl<'info> ConfirmTransaction<'info> {
     pub fn process(&mut self) -> Result<()> {
-        require!(self.signer.key() == self.transaction.customer, ConfirmTransactionErrors::CustomerKeyConflict);
+        require!(self.signer.key() == self.transaction.customer, ConfirmTransactionErrors::NotAuthenticated);
         require!(self.store.key() == self.transaction.store, ConfirmTransactionErrors::StoreKeyConflict);
         require!(self.signer.lamports() >= self.transaction.amount, ConfirmTransactionErrors::InsufficientBalance);
+        require!(self.transaction.state == TransactionState::Pending, ConfirmTransactionErrors::InvalidTransactionState);
 
         let store_account_info = self.store.to_account_info();
         let customer_account_info = self.signer.to_account_info();
@@ -49,10 +50,12 @@ impl<'info> ConfirmTransaction<'info> {
 
 #[error_code]
 pub enum ConfirmTransactionErrors {
-    #[msg("Customer key conflict")]
-    CustomerKeyConflict,
+    #[msg("Not authenticated")]
+    NotAuthenticated,
     #[msg("Store key conflict")]
     StoreKeyConflict,
     #[msg("Insufficient balance")]
     InsufficientBalance,
+    #[msg("Invalid transaction state")]
+    InvalidTransactionState,
 }
