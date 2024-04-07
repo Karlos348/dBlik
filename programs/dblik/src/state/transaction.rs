@@ -22,7 +22,7 @@ pub trait TransactionAccount {
 impl TransactionAccount for Account<'_, Transaction> {
     fn new_serialized_transaction(customer: Pubkey) -> Result<Vec<u8>> {
         let discriminator = Transaction::discriminator();
-        let timestamp: i64 = clock::Clock::get()?.unix_timestamp;
+        let timestamp: i64 = clock::Clock::get()?.unix_timestamp; // todo fix - make it testable
         let transaction = Transaction {
             customer,
             timestamp,
