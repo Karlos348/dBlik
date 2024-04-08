@@ -28,4 +28,8 @@ pub mod dblik {
     pub fn cancel_transaction(ctx: Context<CancelTransaction>) -> Result<()> {
         ctx.accounts.process()
     }
+
+    pub fn expire_transaction(ctx: Context<ExpireTransaction>) -> Result<()> {
+        ctx.accounts.process()
+    }
 }
