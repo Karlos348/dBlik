@@ -41,7 +41,7 @@ The main goal is to learn about smart contracts and work in other languages than
 ## Research and conclusions
 ### Generating random code
 
-As it is known, my application relies on generating random codes, which is not feasible within the domain of blockchain. Additionally, all data on the blockchain is public. While I discovered solution like [Switchboard Randomness](https://docs.switchboard.xyz/randomness), which allows for providing VRF (Verifiable Random Function), it's too expensive for generating a one-time code.
+As it is known, the application relies on generating random codes, which is not feasible within the domain of blockchain. Additionally, all data on the blockchain is public. While I discovered solution like [Switchboard Randomness](https://docs.switchboard.xyz/randomness), which allows for providing VRF (Verifiable Random Function), it's too expensive for generating a one-time code.
 
 Therefore, I've decided to generate the code off-chain.
 
