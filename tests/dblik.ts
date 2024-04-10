@@ -18,10 +18,10 @@ const user = provider.wallet;
 const program = anchor.workspace.Dblik as Program<Dblik>;
 const programId = program.programId;
 
-describe("dblik", /* async */ () => {
+describe("dblik", () => {
 
   const buffer = Buffer.concat([
-    Buffer.from("06042024"),
+    Buffer.from("10042024"),
     Buffer.from("100"),
     program.programId.toBuffer()
   ]);

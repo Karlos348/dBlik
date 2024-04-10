@@ -19,7 +19,7 @@ impl<'info> InitializeTransaction<'info> {
         let customer = self.signer.signer_key();
         require!(customer.is_some(), InitializeTransactionErrors::NoCustomerKey);
 
-        let serialized_transaction = <anchor_lang::prelude::Account<'_, state::transaction::Transaction> as TransactionAccount>::new_serialized_transaction(*customer.unwrap())?;
+        let serialized_transaction = <anchor_lang::prelude::Account<'_, state::transaction::Transaction> as TransactionAccount>::new_serialized_transaction(*customer.unwrap(), TimeProvider)?;
 
         require!(serialized_transaction.len() <= account_data.len(), InitializeTransactionErrors::ImproperlyCreatedAccount);
         account_data[0..serialized_transaction.len()].copy_from_slice(&serialized_transaction[0..serialized_transaction.len()]);
