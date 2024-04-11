@@ -33,7 +33,7 @@ The main goal is to learn about smart contracts and work in other languages than
     - [ ] Public demo
     - [x] Refunding overdue funds in the Transaction Account
     - [x] Transaction cancellation by customer
-    - [ ] Transaction expiration by store
+    - [x] Transaction expiration by store
     - [ ] Integration with chosen e-commerce platform
     - [ ] Mobile application
     - [ ] Reusing Storage Accounts to reduce transaction fees
