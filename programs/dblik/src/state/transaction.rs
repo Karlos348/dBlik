@@ -88,24 +88,30 @@ pub enum TransactionErrors {
 #[cfg(test)]
 pub mod tests {
     use anchor_lang::{solana_program::pubkey::Pubkey, Discriminator};
-    use crate::{MockTime, Transaction, TransactionAccount};
+    use crate::{consts::DEFAULT_PUBKEY, MockTime, Transaction, TransactionAccount};
 
     #[test]
-    fn it_works() {
+    fn test_new_serialized_transaction_data_correctness() {
         let customer_bytes: [u8; 32] = [1; 32];
         let customer_pubkey : Pubkey = Pubkey::new_from_array(customer_bytes);
         let discriminator = Transaction::discriminator(); 
         let mut time_mock = MockTime::new();
         time_mock.expect_get_timestamp().returning(|| i64::MAX);
 
-
         let serialized_transaction = 
             <anchor_lang::prelude::Account<'_, Transaction> as TransactionAccount>
-            ::new_serialized_transaction(customer_pubkey, time_mock)
-            .unwrap();
+            ::new_serialized_transaction(customer_pubkey, time_mock);
 
-        assert_eq!(discriminator, serialized_transaction[0..8]);
-        assert_eq!(customer_bytes, serialized_transaction[8..8+32]);
-        //assert_eq!([0; 40], serialized_transaction[0..]);
+        assert!(serialized_transaction.is_ok());
+
+        let serialized_transaction = serialized_transaction.unwrap();
+
+        assert_eq!(discriminator, serialized_transaction[0..8]); // discriminator
+        assert_eq!(customer_bytes, serialized_transaction[8..8+32]); // customer
+        assert_eq!(i64::MAX.to_le_bytes(), serialized_transaction[8+32..8+32+8]); // timestamp
+        assert_eq!([0], serialized_transaction[8+32+8..8+32+8+1]); // state
+        assert_eq!(DEFAULT_PUBKEY.to_bytes(), serialized_transaction[8+32+8+1..8+32+8+1+32]); // store
+        assert_eq!([0; 8], serialized_transaction[8+32+8+1+32..8+32+8+1+32+8]); // amount
+        assert_eq!([0; 4], serialized_transaction[8+32+8+1+32+8..]); // message
     }
 }
