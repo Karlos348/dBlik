@@ -25,7 +25,7 @@ impl<'info> RequestPayment<'info> {
         let store = self.signer.signer_key();
         require!(store.is_some(), RequestPaymentErrors::NoStoreKey);
 
-        self.transaction.assign_store(*store.unwrap(), amount, message)
+        self.transaction.assign_store(TimeProvider, *store.unwrap(), amount, message)
     }
 }
 

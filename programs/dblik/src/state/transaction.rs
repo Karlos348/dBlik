@@ -15,7 +15,7 @@ pub struct Transaction {
 
 pub trait TransactionAccount {
     fn new_serialized_transaction(customer: Pubkey, time_provider: impl Time) -> Result<Vec<u8>>;
-    fn assign_store(&mut self, store: Pubkey, amount: u64, message: String) -> Result<()>;
+    fn assign_store(&mut self, time_provider: impl Time, store: Pubkey, amount: u64, message: String) -> Result<()>;
 }
 
 impl TransactionAccount for Account<'_, Transaction> {
@@ -36,11 +36,17 @@ impl TransactionAccount for Account<'_, Transaction> {
         Ok(serialized)
     }
     
-    fn assign_store(&mut self, store: Pubkey, amount: u64, message: String) -> Result<()> {
+    fn assign_store(&mut self, time_provider: impl Time, store: Pubkey, amount: u64, message: String) -> Result<()> {
 
-        let now = TimeProvider.get_timestamp();
-        require!(self.state == TransactionState::Initialized, TransactionErrors::InvalidTransactionState);
+        let now = time_provider.get_timestamp();
         require!(now <= self.timestamp + TRANSACTION_EXPIRATION_TIME_IN_SECONDS, TransactionErrors::TransactionExpired);
+        if now > self.timestamp + TRANSACTION_EXPIRATION_TIME_IN_SECONDS
+        {
+            self.state = TransactionState::Expired;
+            return err!(TransactionErrors::TransactionExpired);
+        }
+
+        require!(self.state == TransactionState::Initialized, TransactionErrors::InvalidTransactionState);
         require!(self.customer != store, TransactionErrors::AccountsConflict);
 
         self.store = store;
