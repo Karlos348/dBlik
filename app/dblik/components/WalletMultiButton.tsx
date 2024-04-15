@@ -8,9 +8,11 @@ export const WalletMultiButtonDynamic = dynamic(
 )
 
 const WalletMultiButton = () => {
-  return <WalletContextProvider>
+
+  return (
+  <WalletContextProvider>
     <WalletMultiButtonDynamic />
-    </WalletContextProvider>
-}
+  </WalletContextProvider>
+)}
 
 export default WalletMultiButton
