@@ -1,4 +1,4 @@
-use crate::*;
+use crate::{consts::RETURNABLE_STORE_FEE, *};
 use anchor_lang::solana_program::{program, system_instruction};
 
 #[derive(Accounts)]
@@ -36,11 +36,13 @@ impl<'info> ConfirmTransaction<'info> {
             &[],
         )?;
 
-        let amount = self.transaction.get_lamports();
         let transaction_account_info = self.transaction.to_account_info();
+        let store_account_info = self.store.to_account_info();
         let customer_account_info = self.signer.to_account_info();
+        let amount = self.transaction.get_lamports() - RETURNABLE_STORE_FEE;
 
-        **transaction_account_info.try_borrow_mut_lamports()? -= amount;
+        **transaction_account_info.try_borrow_mut_lamports()? -= RETURNABLE_STORE_FEE + amount;
+        **store_account_info.try_borrow_mut_lamports()? += RETURNABLE_STORE_FEE;
         **customer_account_info.try_borrow_mut_lamports()? += amount;
 
         self.transaction.state = TransactionState::Succeed;

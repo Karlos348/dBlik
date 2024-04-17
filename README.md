@@ -61,7 +61,9 @@ So, I've decided to use the standard method `anchor.web3.SystemProgram.createAcc
 
 The attacker, by subscribing to changes in the program, can easly obtain the account address with transaction data. They can send a payment request without knowing the code.
 
-The only solution that comes to mind, besides comparing the transaction amount, is attaching additional custom information from the store, such as the name and internal transaction ID. However, this still requires caution from the user.
+The solution that comes to mind first, besides comparing the transaction amount, is attaching additional custom information from the store, such as the name and internal transaction ID. However, this still requires caution from the user.
+
+The second option is to charge the store a refundable fee for hooking up to the transaction, which will be refunded regardless of the success of the transaction.
 
 ## Setup
 TBD
