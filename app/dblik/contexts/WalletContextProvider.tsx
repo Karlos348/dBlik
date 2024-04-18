@@ -8,20 +8,17 @@ import {
 } from "@solana/wallet-adapter-react"
 import { WalletModalProvider } from "@solana/wallet-adapter-react-ui"
 import { CoinbaseWalletAdapter, LedgerWalletAdapter, PhantomWalletAdapter, TrustWalletAdapter } from "@solana/wallet-adapter-wallets"
-import { PublicKey, clusterApiUrl } from "@solana/web3.js"
+import { Connection, PublicKey, clusterApiUrl } from "@solana/web3.js"
+import React from "react"
 require("@solana/wallet-adapter-react-ui/styles.css")
 
-const WalletContextProvider: FC/*function component*/<{ children: ReactNode }> = ({ children }) => {
 
+const WalletContextProvider = ({ children }: { children: React.ReactNode }) => 
+{
   const network = WalletAdapterNetwork.Devnet
   const endpoint = useMemo(() => clusterApiUrl(network), [network])
   const { connection } = useConnection();
   const { publicKey } = useWallet();
-
-  let [state, setState] = useState({
-    pk: PublicKey.default,
-    balance: 0
-})
 
   const wallets = useMemo(
     () => [
@@ -31,6 +28,21 @@ const WalletContextProvider: FC/*function component*/<{ children: ReactNode }> =
     ],
     [network]
   )
+
+  const [resources, setResources] = useState<{
+    connection: Connection
+    publicKey: PublicKey | null
+  }>();
+
+  const todo = async () => {
+    if (resources?.publicKey != null) 
+        return;
+
+    setResources({
+      connection: useConnection().connection,
+      publicKey: useWallet().publicKey
+    });
+  };
 
   return (
     <ConnectionProvider endpoint={endpoint}>
