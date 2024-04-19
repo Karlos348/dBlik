@@ -1,4 +1,5 @@
 "use client";
+import { BalanceProvider } from "@/contexts/BalanceContext";
 import WalletContextProvider from "@/contexts/WalletContextProvider";
 import { PublicKey } from "@solana/web3.js";
 import { createContext, useContext, useState } from "react";
@@ -9,11 +10,13 @@ export function AppWrapper({children} : {
     children: React.ReactNode
 }) {
 
+
+
     return (
-    <AppContext.Provider value={{state, setState}}>
-        <WalletContextProvider>
+    <AppContext.Provider value>
+        <BalanceProvider>
             {children}
-        </WalletContextProvider>
+        </BalanceProvider>
     </AppContext.Provider>
     )
 }
