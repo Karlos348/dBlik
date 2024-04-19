@@ -9,7 +9,7 @@ export const connection = new Connection(clusterApiUrl("devnet"), {
     commitment: "confirmed",
 })
 
-const StaticWallet = {
+export const StaticWallet = {
 publicKey: new PublicKey("5ctBcsuKYt19mBqPj6Sfbz6cfv6gRFu6Gm5G4hiK8Gv8"),
 signTransaction: () => Promise.reject(),
 signAllTransactions: () => Promise.reject(),

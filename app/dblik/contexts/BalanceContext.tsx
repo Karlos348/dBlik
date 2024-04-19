@@ -1,4 +1,4 @@
-import { provider } from "@/utils/anchor"
+import { StaticWallet, provider } from "@/utils/anchor"
 import { useWallet } from "@solana/wallet-adapter-react"
 import { LAMPORTS_PER_SOL } from "@solana/web3.js"
 import { createContext, useCallback, useContext, useEffect, useState } from "react"
@@ -21,18 +21,16 @@ export const BalanceProvider = ({
   }: {
     children: React.ReactNode
   }) => {
-    const { publicKey } = useWallet()
+    //const { publicKey } = useWallet()
     const [balance, setBalance] = useState(0)
   
-    // Fetch balances
     const fetchBalance = useCallback(async () => {
-      if (!publicKey) return
+      //if (!publicKey) return
       
-      const playerBalance = await provider.connection.getBalance(publicKey)
-      setBalance(parseFloat((playerBalance / LAMPORTS_PER_SOL).toFixed(1)))
-    }, [publicKey])
+      const playerBalance = await provider.connection.getBalance(StaticWallet.publicKey)
+      setBalance(parseFloat((playerBalance / LAMPORTS_PER_SOL).toString()))
+    }, [StaticWallet.publicKey])
   
-    // Effect to fetch balance when the component mounts
     useEffect(() => {
       fetchBalance()
     }, [fetchBalance])

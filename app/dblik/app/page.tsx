@@ -7,21 +7,19 @@ import { web3 } from "@coral-xyz/anchor";
 import * as anchor from "@coral-xyz/anchor";
 import { useAppContext } from ".";
 import { useEffect } from "react";
-import { useBalance } from "@/contexts/BalanceContext";
+import { BalanceProvider, useBalance } from "@/contexts/BalanceContext";
 
-export default async function Home() {
-const { publicKey  } = useWallet();
+export default function Home() {
+//const { publicKey  } = useWallet();
 // const {connection } = useConnection();
 // const conn = new Connection("https://api.devnet.solana.com");
-const {balance, fetchBalance} = useBalance();
-
-await fetchBalance();
+const {balance} = useBalance();
 
 return (
   <main className="flex min-h-screen flex-col items-center justify-between p-24">
-   pk: {publicKey?.toString()}
-   balance: {balance}
-    <WalletMultiButton />
+    <BalanceProvider>
+      balance: {balance}
+      </BalanceProvider>
   </main>
   )
 }
