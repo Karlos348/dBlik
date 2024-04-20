@@ -1,4 +1,3 @@
-import WalletContextProvider from "@/contexts/WalletContextProvider"
 import dynamic from "next/dynamic"
 
 export const WalletMultiButtonDynamic = dynamic(
@@ -7,12 +6,8 @@ export const WalletMultiButtonDynamic = dynamic(
   { ssr: false }
 )
 
-const WalletMultiButton = () => {
-
-  return (
-  <WalletContextProvider>
+const WalletMultiButton = () => (
     <WalletMultiButtonDynamic />
-  </WalletContextProvider>
-)}
+)
 
 export default WalletMultiButton

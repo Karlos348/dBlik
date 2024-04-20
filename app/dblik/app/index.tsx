@@ -1,23 +1,19 @@
 "use client";
 import { BalanceProvider } from "@/contexts/BalanceContext";
-import WalletContextProvider from "@/contexts/WalletContextProvider";
-import { PublicKey } from "@solana/web3.js";
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext } from "react";
+import WalletWrapper from "@/contexts/WalletContextProvider";
 
 const AppContext = createContext<any>(undefined);
 
 export function AppWrapper({children} : {
     children: React.ReactNode
 }) {
-
-
-
     return (
-    <AppContext.Provider value>
-        <BalanceProvider>
-            {children}
-        </BalanceProvider>
-    </AppContext.Provider>
+<WalletWrapper>
+    <BalanceProvider>
+        {children}
+    </BalanceProvider>
+</WalletWrapper>
     )
 }
 
