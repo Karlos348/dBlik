@@ -10,7 +10,7 @@ import { clusterApiUrl } from "@solana/web3.js"
 import React from "react"
 require("@solana/wallet-adapter-react-ui/styles.css")
 
-const WalletWrapper = ({ children }: { children: React.ReactNode }) => 
+const WalletContextProvider = ({ children }: { children: React.ReactNode }) => 
 {
     const network = WalletAdapterNetwork.Devnet
     const endpoint = useMemo(() => clusterApiUrl(network), [network])
@@ -33,4 +33,4 @@ const WalletWrapper = ({ children }: { children: React.ReactNode }) =>
   )
 }
 
-export default WalletWrapper
+export default WalletContextProvider
