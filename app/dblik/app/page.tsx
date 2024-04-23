@@ -2,7 +2,7 @@
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { useBalance } from "@/contexts/BalanceContext";
 import WalletMultiButton from "@/components/WalletMultiButton";
-import { generateSeed } from "@/utils/transaction";
+import { generateSeedForCustomer } from "@/utils/transaction";
 
 export default function Home() {
   const {balance} = useBalance();
@@ -13,7 +13,7 @@ export default function Home() {
 <main className="flex min-h-screen flex-col items-center justify-between p-64">
   pk: {publicKey?.toString() ?? ""}<br/>
   balance: {balance}<br/>
-  seed: {generateSeed()}
+  seed: {generateSeedForCustomer()}
   <WalletMultiButton/>
 </main>
   )

@@ -1,12 +1,14 @@
-"use client";
 import { generateCode } from "./code";
 
-export function generateSeed() {
-    return generateCode().toString() + getUtcTime();
+const TRANSACTION_WINDOW_IN_MINUTES: number = 10;
+
+export function generateSeedForCustomer() {
+    return generateCode().toString() + getRoundedUtcDate();
 }
 
-function getUtcTime() { // todo: round it up
+function getRoundedUtcDate() {
     const now = new Date();
-    const formattedDate = now.toISOString().replace(/\D/g, '').slice(0, 12);
-    return formattedDate;
+    const minutes = now.getUTCMinutes();
+    now.setMinutes(minutes + TRANSACTION_WINDOW_IN_MINUTES - (minutes % TRANSACTION_WINDOW_IN_MINUTES));
+    return now.toISOString().replace(/\D/g, '').slice(0, 12);
 }
