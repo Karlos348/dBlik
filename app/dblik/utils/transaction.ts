@@ -17,7 +17,7 @@ export function generateSeedsForStore(code: number)
         return getRoundedUtcDate(now);
     }
 
-    return getRoundedUtcDate(now);
+    return code.toString()+getRoundedUtcDate(now);
 }
 
 function getRoundedUtcDate(date: Date) {
