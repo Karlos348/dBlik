@@ -4,31 +4,34 @@ const TRANSACTION_WINDOW_IN_MINUTES: number = 10;
 const TRANSACTION_EXPIRATION_TIME_IN_SECONDS: number = 120;
 const MINUTES_TO_SECONDS_MULTIPLIER: number = 60;
 
-export function generateSeedForCustomer() {
-    return generateCode().toString() + getRoundedUtcDate(new Date());
+export function generateSeedForCustomer(date: Date) : string {
+    return generateCode().toString() + getUtcDateRoundedUp(new Date());
 }
 
-export function generateSeedsForStore(code: number)
+export function generateSeedsForStore(code: number, date: Date) : string[]
 {
-    const now = new Date();
-    if(isInOverlapZone(now))
+    if(isInOverlapZone(date))
     {
-        // todo: check also previous rounded date
-        return getRoundedUtcDate(now);
+        return [code.toString()+getUtcDateRoundedDown(date),
+            code.toString()+getUtcDateRoundedUp(date)];
     }
 
-    return code.toString()+getRoundedUtcDate(now);
+    return [code.toString()+getUtcDateRoundedUp(date)];
 }
 
-function getRoundedUtcDate(date: Date) {
+function getUtcDateRoundedUp(date: Date) : string {
     const minutes = date.getUTCMinutes();
     date.setMinutes(minutes + TRANSACTION_WINDOW_IN_MINUTES - (minutes % TRANSACTION_WINDOW_IN_MINUTES));
-    // todo: add minutes instead of set (?)
-    
     return date.toISOString().replace(/\D/g, '').slice(0, 12);
 }
 
-function isInOverlapZone(date: Date) {
+function getUtcDateRoundedDown(date: Date) : string {
+    const minutes = date.getUTCMinutes();
+    date.setMinutes(minutes - (minutes % TRANSACTION_WINDOW_IN_MINUTES));
+    return date.toISOString().replace(/\D/g, '').slice(0, 12);
+}
+
+function isInOverlapZone(date: Date) : boolean {
     const minutes = date.getUTCMinutes();
     const seconds = date.getUTCSeconds();
     return ((minutes % TRANSACTION_WINDOW_IN_MINUTES) * MINUTES_TO_SECONDS_MULTIPLIER) + seconds < TRANSACTION_EXPIRATION_TIME_IN_SECONDS;
