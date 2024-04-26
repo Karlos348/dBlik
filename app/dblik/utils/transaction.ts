@@ -1,8 +1,21 @@
+import { Keypair } from "@solana/web3.js";
+import { programId } from "./anchor";
 import { generateCode } from "./code";
+import {sha256} from '@noble/hashes/sha256';
 
 const TRANSACTION_WINDOW_IN_MINUTES: number = 10;
 const TRANSACTION_EXPIRATION_TIME_IN_SECONDS: number = 120;
 const MINUTES_TO_SECONDS_MULTIPLIER: number = 60;
+
+export function getKeypair(seed: string) : Keypair
+{
+    const buffer = Buffer.concat([
+        Buffer.from(seed),
+        programId.toBuffer()
+    ]);
+      
+    return Keypair.fromSeed(sha256(buffer));
+}
 
 export function generateSeedForCustomer(date: Date) : string {
     return generateCode().toString() + getUtcDateRoundedUp(new Date());

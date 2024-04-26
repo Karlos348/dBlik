@@ -1,4 +1,7 @@
-import { useConnection, useWallet } from "@solana/wallet-adapter-react"
+import { initialize_transaction } from "@/clients/transaction_client"
+import { programId, provider } from "@/utils/anchor"
+import { generateSeedForCustomer, getKeypair } from "@/utils/transaction"
+import { useAnchorWallet, useConnection, useWallet } from "@solana/wallet-adapter-react"
 import { LAMPORTS_PER_SOL } from "@solana/web3.js"
 import { createContext, useCallback, useContext, useEffect, useState } from "react"
 
@@ -30,6 +33,10 @@ export const BalanceProvider = ({
       }
       const balance = await connection.getBalance(publicKey, { commitment: 'confirmed'})
       setBalance(parseFloat((balance / LAMPORTS_PER_SOL).toString()))
+
+
+      const keypair = getKeypair(generateSeedForCustomer(new Date()));
+      await initialize_transaction(connection, programId, keypair, /* todo: import wallet */);
     }, [publicKey])
   
     useEffect(() => {
