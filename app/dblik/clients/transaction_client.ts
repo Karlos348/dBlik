@@ -1,10 +1,9 @@
-import { INITIAL_ACCOUNT_SIZE, program } from "@/utils/anchor";
+import { INITIAL_ACCOUNT_SIZE, program, programId } from "@/utils/anchor";
 import { Wallet, web3 } from "@coral-xyz/anchor";
 import { Keypair, PublicKey, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
 
 export async function initialize_transaction(
     connection: web3.Connection,
-    programId: PublicKey, 
     accountKeypair: Keypair,
     payerWallet: Wallet) : Promise<string | void>
 {
@@ -22,9 +21,11 @@ export async function initialize_transaction(
     .accounts({
         signer: payerWallet.publicKey,
         transaction: accountKeypair.publicKey,
-        systemProgram: web3.SystemProgram.programId,
+        systemProgram: web3.SystemProgram.programId
     })
+    .signers([payerWallet.payer, accountKeypair])
     .instruction();
+
 
     let blockhash = await connection.getLatestBlockhash().then(res => res.blockhash);
 
