@@ -1,14 +1,17 @@
 import { INITIAL_ACCOUNT_SIZE, program, programId } from "@/utils/anchor";
-import { Wallet, web3 } from "@coral-xyz/anchor";
+import { web3 } from "@coral-xyz/anchor";
+import { WalletContextState } from "@solana/wallet-adapter-react";
 import { Keypair, PublicKey, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
 
 export async function initialize_transaction(
     connection: web3.Connection,
     accountKeypair: Keypair,
-    payerWallet: Wallet) : Promise<string | void>
+    payerWallet: WalletContextState) : Promise<string | void>
 {
+    const payerPubkey = payerWallet.publicKey ?? PublicKey.default;
+
     let createAccountInstruction = web3.SystemProgram.createAccount({
-        fromPubkey: payerWallet.publicKey,
+        fromPubkey: payerPubkey,
         newAccountPubkey: accountKeypair.publicKey,
         lamports: await connection.getMinimumBalanceForRentExemption(
             INITIAL_ACCOUNT_SIZE
@@ -19,27 +22,25 @@ export async function initialize_transaction(
 
     const initTransactionInstruction = await program.methods.initTransaction()
     .accounts({
-        signer: payerWallet.publicKey,
+        signer: payerPubkey,
         transaction: accountKeypair.publicKey,
         systemProgram: web3.SystemProgram.programId
     })
-    .signers([payerWallet.payer, accountKeypair])
+    .signers([accountKeypair])
     .instruction();
-
 
     let blockhash = await connection.getLatestBlockhash().then(res => res.blockhash);
 
     const messageV0 = new TransactionMessage({
-        payerKey: payerWallet.publicKey,
+        payerKey: payerPubkey,
         recentBlockhash: blockhash,
-        instructions: [createAccountInstruction, initTransactionInstruction],
+        instructions: [createAccountInstruction, initTransactionInstruction]
     }).compileToV0Message();
 
     const tx = new VersionedTransaction(messageV0);
     [accountKeypair].forEach(s => tx.sign([s]));
-    payerWallet.signTransaction(tx);
 
-    const signature = await connection.sendTransaction(tx).catch(e => console.error(e));
+    const signature = await payerWallet.sendTransaction(tx, connection).catch(e => console.error(e));
 
     console.log("Account: https://explorer.solana.com/address/"+accountKeypair.publicKey+"?cluster=devnet\nTx: https://explorer.solana.com/tx/"+signature+"?cluster=devnet");
 

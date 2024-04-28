@@ -1,7 +1,6 @@
 import { initialize_transaction } from "@/clients/transaction_client"
 import { generateSeedForCustomer, getKeypair } from "@/utils/transaction"
-import NodeWallet from "@coral-xyz/anchor/dist/cjs/nodewallet"
-import { AnchorWallet, useAnchorWallet, useConnection, useWallet } from "@solana/wallet-adapter-react"
+import { useConnection, useWallet } from "@solana/wallet-adapter-react"
 import { createContext, useCallback, useContext, useEffect, useState } from "react"
 
 type TransactionContextType = {
@@ -21,34 +20,31 @@ export const TransactionProvider = ({
   }: {
     children: React.ReactNode
   }) => {
-    const { publicKey } = useWallet();
+    const wallet = useWallet();
     const [tx, setTx] = useState('');
-    const {connection } = useConnection();
-    const anchorWallet = useAnchorWallet() as AnchorWallet;
+    const { connection } = useConnection();
   
+    // todo: fix double requests
+
     const initTransaction = useCallback(async () => {
-      if (publicKey == null) {
+      if (wallet.publicKey == null) {
         setTx(''); 
         return
       }
 
       const keypair = getKeypair(generateSeedForCustomer(new Date()));
-      const transaction = await initialize_transaction(connection, keypair, anchorWallet as NodeWallet);
+      const transaction = await initialize_transaction(connection, keypair, wallet);
       
-      if (typeof(transaction) !== 'string')
+      if (typeof(transaction) !== 'string') 
       {
         return
       }
-      
 
       setTx(transaction);
-    }, [publicKey])
+    }, [wallet.publicKey])
   
     useEffect(() => {
-      if(tx != '')
-        {
-          return
-        }
+      if(tx != '') return
 
       initTransaction()
     }, [initTransaction])
