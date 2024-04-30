@@ -5,11 +5,13 @@ import { createContext, useCallback, useContext, useEffect, useState } from "rea
 
 type TransactionContextType = {
   tx: string
+  isClient: boolean
   initTransaction: () => Promise<void>
 }
   
 const TransactionContext = createContext<TransactionContextType>({
   tx: '',
+  isClient: false,
   initTransaction: async () => {},
 })
 
@@ -23,6 +25,7 @@ export const TransactionProvider = ({
     const wallet = useWallet();
     const [tx, setTx] = useState('');
     const { connection } = useConnection();
+    const [isClient, setIsClient] = useState(false)
   
     // todo: fix double requests
 
@@ -44,13 +47,15 @@ export const TransactionProvider = ({
     }, [wallet.publicKey])
   
     useEffect(() => {
-      if(tx != '') return
+      setIsClient(true)
 
+      if(tx != '') return
+      
       initTransaction()
     }, [initTransaction])
   
     return (
-      <TransactionContext.Provider value={{ tx, initTransaction }}>
+      <TransactionContext.Provider value={{ tx, initTransaction, isClient } }>
         {children}
       </TransactionContext.Provider>
     )

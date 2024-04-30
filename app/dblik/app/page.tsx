@@ -9,7 +9,7 @@ export default function Home() {
   const {balance} = useBalance();
   const {publicKey} = useWallet();
   const {connection} = useConnection();
-  const {tx} = useTransaction();
+  const {tx, isClient} = useTransaction();
   const now = new Date();
 
   return (
@@ -17,8 +17,8 @@ export default function Home() {
   pk: {publicKey?.toString() ?? ""}<br/>
   balance: {balance}<br/>
   tx: {tx == '' ? '-' : tx}<br/>
-  seed: {generateSeedForCustomer(now)}<br/>
-  seeds: {generateSeedsForStore(123321, new Date(now)).toString()}<br/>
+  seed: {isClient ? generateSeedForCustomer(now) : '-'}<br/>
+  seeds: {isClient ? generateSeedsForStore(123321, new Date(now)).toString() : '-'}<br/>
   <WalletMultiButton/>
 </main>
   )
