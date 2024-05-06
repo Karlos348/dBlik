@@ -1,6 +1,6 @@
 import { Keypair } from "@solana/web3.js";
 import { programId } from "./anchor";
-import {sha256} from '@noble/hashes/sha256';
+import { sha256 } from '@noble/hashes/sha256';
 
 export function getKeypair(seed: string) : Keypair
 {
