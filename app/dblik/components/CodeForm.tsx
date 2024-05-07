@@ -8,6 +8,7 @@ import { useState } from 'react';
 export function CodeForm() {
   const [code, setCode] = useState('');
 
+
   const handleSubmit = async (e: any) => {
     e.preventDefault();
 
@@ -16,19 +17,40 @@ export function CodeForm() {
     console.log(seeds);
 
     const keypairs = seeds.map(getKeypair);
-    const transactions = keypairs.map(async x => await getTransaction(connection, x.publicKey));
-    console.log(transactions);
+
+    const transactionKeypairs = (await Promise.all(keypairs.map(async x => {
+      const t = await getTransaction(connection, x.publicKey);
+      return t !== null ? x : null;
+    })))
+    .filter(x => x !== null);
+    
+    if(transactionKeypairs.length > 1)
+    {
+      console.log('transactionKeypairs.length > 1')
+      return;
+    }
+    
+    if(transactionKeypairs.length == 0)
+    {
+      console.log('transactionKeypairs.length == 0')
+      return;
+    }
+
+    const pubkey = transactionKeypairs[0]?.publicKey;
 
     const sampleAmount = 0.001 * web3.LAMPORTS_PER_SOL;
     const requestPaymentTx = await program.methods.requestPayment(new BN(sampleAmount), "d-"+new Date().toString())
         .accounts({
       signer: process.env.STORE_KEYPAIR,
-      transaction: // todo),
+      transaction: pubkey,
       systemProgram: programId,
     })
-    .rpc()
+    .rpc(); // todo: still doesn't work
 
-    console.log(code);
+    console.log(requestPaymentTx);
+
+    
+    console.log('code '+ code);
   };
 
   return (
