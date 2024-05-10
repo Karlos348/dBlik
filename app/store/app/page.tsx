@@ -1,5 +1,4 @@
-"use client";
-
+"use client"
 import { CodeForm } from "@/components/CodeForm";
 
 export default function Home() {

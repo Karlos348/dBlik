@@ -1,8 +1,10 @@
+"suse client"
 import { getTransaction } from '@/clients/transaction_client';
-import { connection, program, programId } from '@/utils/anchor';
+import { connection, program, programId, provider } from '@/utils/anchor';
 import { generateSeedsForStore, getKeypair } from '@/utils/transaction';
 import { roundDateForStore } from '@/utils/transaction_date';
 import { BN, web3 } from '@coral-xyz/anchor';
+import { PublicKey } from '@solana/web3.js';
 import { useState } from 'react';
 
 export function CodeForm() {
@@ -19,7 +21,7 @@ export function CodeForm() {
     const keypairs = seeds.map(getKeypair);
 
     const transactionKeypairs = (await Promise.all(keypairs.map(async x => {
-      const t = await getTransaction(connection, x.publicKey);
+      const t = await getTransaction(provider, x.publicKey);
       return t !== null ? x : null;
     })))
     .filter(x => x !== null);
@@ -41,11 +43,11 @@ export function CodeForm() {
     const sampleAmount = 0.001 * web3.LAMPORTS_PER_SOL;
     const requestPaymentTx = await program.methods.requestPayment(new BN(sampleAmount), "d-"+new Date().toString())
         .accounts({
-      signer: process.env.STORE_KEYPAIR,
+      signer: provider.publicKey,
       transaction: pubkey,
       systemProgram: programId,
     })
-    .rpc(); // todo: still doesn't work
+    .rpc();
 
     console.log(requestPaymentTx);
 
