@@ -1,4 +1,3 @@
-import { INITIAL_ACCOUNT_SIZE, program, programId } from "@/utils/anchor";
 import { Provider, web3 } from "@coral-xyz/anchor";
 import { Keypair, PublicKey, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
 import { u32, u8, struct, seq } from '@solana/buffer-layout';
