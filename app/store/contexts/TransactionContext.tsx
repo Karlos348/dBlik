@@ -3,7 +3,7 @@ import { roundDateForCustomer } from "@/utils/transaction_date"
 import { createContext, useCallback, useContext, useEffect, useState } from "react"
 
 type TransactionContextType = {
-  tx: string | null
+  keypair: string | null
   code: number | null
   state: TransactionState
   isClient: boolean
@@ -16,7 +16,7 @@ enum TransactionState {
 }
   
 const TransactionContext = createContext<TransactionContextType>({
-  tx: null,
+  keypair: null,
   code: null,
   state: TransactionState.New,
   isClient: false,
@@ -43,7 +43,7 @@ export const TransactionProvider = ({
     }, [requestPayment])
 
     return (
-      <TransactionContext.Provider value={{ tx: null, code: null, requestPayment, state: TransactionState.Initialized, isClient } }>
+      <TransactionContext.Provider value={{ keypair: null, code: null, requestPayment, state: TransactionState.Initialized, isClient } }>
         {children}
       </TransactionContext.Provider>
     )
