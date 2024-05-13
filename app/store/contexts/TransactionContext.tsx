@@ -7,7 +7,7 @@ type TransactionContextType = {
   code: number | null
   state: TransactionState
   isClient: boolean
-  requestPayment: () => Promise<void>
+  requestPayment: (x) => Promise<void>
 }
 
 enum TransactionState {
@@ -20,7 +20,7 @@ const TransactionContext = createContext<TransactionContextType>({
   code: null,
   state: TransactionState.New,
   isClient: false,
-  requestPayment: async () => {},
+  requestPayment: async (x) => {},
 })
 
 export const useTransaction = () => useContext(TransactionContext);
@@ -32,19 +32,22 @@ export const TransactionProvider = ({
   }) => {
     
     const [isClient, setIsClient] = useState(false)
+    const [code, setCode] = useState<number | null>(null)
 
-    const requestPayment = useCallback(async () => {
-    }, [])
+    const requestPayment = useCallback(async (x) => {
+      setCode(x)
+      console.log('code changed: '+ x)
+    }, [code])
   
     useEffect(() => {
+      setCode(code)
       setIsClient(true)
-
-      requestPayment()
-    }, [requestPayment])
+    }, [])
 
     return (
-      <TransactionContext.Provider value={{ keypair: null, code: null, requestPayment, state: TransactionState.Initialized, isClient } }>
+      <TransactionContext.Provider value={{ keypair: null, code, requestPayment, state: TransactionState.Initialized, isClient } }>
         {children}
       </TransactionContext.Provider>
     )
   }
+  
