@@ -1,31 +1,38 @@
+import { useTransaction } from '@/contexts/TransactionContext';
 import Product from '@/models/product';
 
 export function ProductsList() {
 
-const productsData = [
-    new Product(1, 'Buddy', '/products/100.jpg', 0.05),
-    new Product(2, 'Médor', '/products/101.jpg', 0.08),
-    new Product(3, 'Rex', '/products/102.jpg', 0.5),
-    new Product(4, 'Fido', '/products/103.jpg', 0.13),
-    new Product(5, 'Iggy', '/products/104.jpg', 0.22),
-    new Product(6, 'Tobby', '/products/105.jpg', 0.18),
-    new Product(7, 'Sharik', '/products/106.jpg', 0.24),
-    new Product(8, 'Pochi', '/products/107.jpg', 0.01),
-    new Product(9, 'Burek', '/products/108.jpg', 10),
-    new Product(10, 'Xiǎobái', '/products/109.jpg', 0.1),
-    new Product(11, 'Max', '/products/110.jpg', 0.01),
-    new Product(12, 'Bubi', '/products/111.jpg', 0.01),
-    new Product(13, 'Bosse', '/products/112.jpg', 0.02),
-    new Product(14, 'Fifis', '/products/113.jpg', 0.05)
-];
-      
+  const transaction = useTransaction();
+  
+  const productsData = [
+      new Product(1, 'Buddy', '/products/100.jpg', 0.05),
+      new Product(2, 'Médor', '/products/101.jpg', 0.08),
+      new Product(3, 'Rex', '/products/102.jpg', 0.5),
+      new Product(4, 'Fido', '/products/103.jpg', 0.13),
+      new Product(5, 'Iggy', '/products/104.jpg', 0.22),
+      new Product(6, 'Tobby', '/products/105.jpg', 0.18),
+      new Product(7, 'Sharik', '/products/106.jpg', 0.24),
+      new Product(8, 'Pochi', '/products/107.jpg', 0.01),
+      new Product(9, 'Burek', '/products/108.jpg', 10),
+      new Product(10, 'Xiǎobái', '/products/109.jpg', 0.1),
+      new Product(11, 'Max', '/products/110.jpg', 0.01),
+      new Product(12, 'Bubi', '/products/111.jpg', 0.01),
+      new Product(13, 'Bosse', '/products/112.jpg', 0.02),
+      new Product(14, 'Fifis', '/products/113.jpg', 0.05)
+  ];
 
   return (
     <div>
-      <h1 className="title">Select product</h1>
+      <h1 className="title">{transaction.productId === null 
+        ? 'Select product' 
+        : <p onClick={() => transaction.selectProduct(null)}>Cancel</p>}</h1>
       <div className="grid">
         {productsData.map(product => (
-          <div key={product.id} className="product">
+          <div key={product.id} 
+            className={transaction.productId !== null ? "selectedProduct" : "product"}
+            hidden={transaction.productId !== null && transaction.productId !== product.id}
+            onClick={transaction.productId === null ? () => transaction.selectProduct(product.id) : () => {}}>
             <p className="name">{product.name}</p>
             <img src={product.image} alt={`Product ${product.name} / ${product.id}`} className="image" />
             <p className="price">{product.price} SOL</p>
@@ -34,9 +41,19 @@ const productsData = [
       <style jsx>{`
           .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(200px, 250px));
             gap: 20px;
             margin: 20px;
+            justify-content: center;
+            align-content: center;
+          }
+
+          .selectedProduct {
+            border: 1px solid #ccc;
+            padding: 10px;
+            justify-content: center;
+            border-radius: 10px;
+            cursor: auto;
           }
           
           .product {
@@ -48,7 +65,7 @@ const productsData = [
           }
 
           .product:hover {
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); 
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
           }
 
           .product:hover .image {
