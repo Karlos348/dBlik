@@ -1,3 +1,4 @@
+import Product from "@/models/product"
 import { generateSeedForCustomer, getKeypair } from "@/utils/transaction"
 import { roundDateForCustomer } from "@/utils/transaction_date"
 import { createContext, useCallback, useContext, useEffect, useState } from "react"
@@ -5,10 +6,10 @@ import { createContext, useCallback, useContext, useEffect, useState } from "rea
 type TransactionContextType = {
   keypair: string | null
   code: number | null
-  productId: number | null
+  product: Product | null,
   state: TransactionState
   isClient: boolean
-  selectProduct: (productId) => Promise<void>
+  selectProduct: (product) => Promise<void>
   requestPayment: (code) => Promise<void>
 }
 
@@ -20,10 +21,10 @@ enum TransactionState {
 const TransactionContext = createContext<TransactionContextType>({
   keypair: null,
   code: null,
-  productId: 13,
+  product: null,
   state: TransactionState.New,
   isClient: false,
-  selectProduct: async (productId) => {},
+  selectProduct: async (product) => {},
   requestPayment: async (code) => {},
 })
 
@@ -37,12 +38,11 @@ export const TransactionProvider = ({
     
     const [isClient, setIsClient] = useState(false)
     const [code, setCode] = useState<number | null>(null)
-    const [productId, setProductId] = useState<number | null>(null)
-
-    const selectProduct = useCallback(async (productId) => {
-      setProductId(productId)
-      console.log('productId: '+ productId)
-    }, [code])
+    const [product, setProduct] = useState<Product | null>(null)
+    const selectProduct = useCallback(async (product) => {
+      setProduct(product)
+      console.log('productId: '+ product?.id)
+    }, [product])
 
     const requestPayment = useCallback(async (code) => {
       setCode(code)
@@ -50,13 +50,13 @@ export const TransactionProvider = ({
     }, [code])
   
     useEffect(() => {
-      setProductId(productId)
+      setProduct(product)
       setCode(code)
       setIsClient(true)
     }, [])
 
     return (
-      <TransactionContext.Provider value={{ keypair: null, code, productId, selectProduct, requestPayment, state: TransactionState.Initialized, isClient } }>
+      <TransactionContext.Provider value={{ keypair: null, code, product: product, selectProduct, requestPayment, state: TransactionState.Initialized, isClient } }>
         {children}
       </TransactionContext.Provider>
     )
