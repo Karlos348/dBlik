@@ -1,6 +1,7 @@
 import { useTransaction } from '@/contexts/TransactionContext';
 import { useState } from 'react';
 import Image from 'next/image'
+import { requestPayment } from '@/clients/transaction_client';
 
 export function CodeForm() {
   const [code, setCode] = useState('');
@@ -9,7 +10,8 @@ export function CodeForm() {
   const handleSubmit = async (e: any) => {
     e.preventDefault();
     setCode(code);
-    //transaction.requestPayment(code);
+    const tx = await requestPayment(Number(code), transaction.product?.price ?? 0, transaction.product?.name ?? '');
+    console.log('[request payment] tx: ' + tx);
   };
 
   return (
