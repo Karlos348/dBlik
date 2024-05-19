@@ -3,11 +3,13 @@ import { generateCode } from "@/utils/code"
 import { generateSeedForCustomer, getKeypair } from "@/utils/transaction"
 import { roundDateForCustomer } from "@/utils/transaction_date"
 import { useConnection, useWallet } from "@solana/wallet-adapter-react"
+import { PublicKey } from "@solana/web3.js"
 import { createContext, useCallback, useContext, useEffect, useState } from "react"
 
 type TransactionContextType = {
   tx: string | null
   code: number | null
+  account: PublicKey | null
   state: TransactionState
   isClient: boolean
   initTransaction: () => Promise<void>
@@ -22,6 +24,7 @@ enum TransactionState {
 const TransactionContext = createContext<TransactionContextType>({
   tx: null,
   code: null,
+  account: null,
   state: TransactionState.New,
   isClient: false,
   initTransaction: async () => {},
@@ -40,6 +43,7 @@ export const TransactionProvider = ({
     const [isClient, setIsClient] = useState(false)
     const [code, setCode] = useState<number | null>(null)
     const [state, setState] = useState<TransactionState>(TransactionState.New)
+    const [account, setAccount] = useState<PublicKey | null>(null)
 
     const initTransaction = useCallback(async () => {
       if (wallet.publicKey == null) {
@@ -63,6 +67,12 @@ export const TransactionProvider = ({
       setCode(code);
       setTx(transaction);
       setState(TransactionState.Initialized);
+      setAccount(keypair.publicKey)
+
+      const subscriptionId = connection.onAccountChange(keypair.publicKey, (accountInfo) => {
+        console.log('Account ' + keypair.publicKey.toString() + ' changed. \n' + accountInfo);
+      });
+      console.log('subscriptionId: ' + subscriptionId)
     }, [wallet.publicKey])
   
     useEffect(() => {
@@ -74,7 +84,7 @@ export const TransactionProvider = ({
     }, [initTransaction])
 
     return (
-      <TransactionContext.Provider value={{ tx, code, initTransaction, state, isClient } }>
+      <TransactionContext.Provider value={{ tx, code, account, initTransaction, state, isClient } }>
         {children}
       </TransactionContext.Provider>
     )

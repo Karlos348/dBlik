@@ -1,5 +1,5 @@
 "use client";
-import { useConnection, useWallet } from "@solana/wallet-adapter-react";
+import { useWallet } from "@solana/wallet-adapter-react";
 import { useBalance } from "@/contexts/BalanceContext";
 import WalletMultiButton from "@/components/WalletMultiButton";
 import { useTransaction } from "@/contexts/TransactionContext";
@@ -8,7 +8,6 @@ export default function Home() {
   const {balance} = useBalance();
   const {publicKey} = useWallet();
   const transaction = useTransaction();
-
 
   return (
 <main className="flex min-h-screen flex-col items-center justify-between p-64">
