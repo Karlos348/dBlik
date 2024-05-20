@@ -1,7 +1,7 @@
 import { useTransaction } from '@/contexts/TransactionContext';
 import { useState } from 'react';
 import Image from 'next/image'
-import { requestPayment } from '@/clients/transaction_client';
+import { LAMPORTS_PER_SOL } from '@solana/web3.js';
 
 export function CodeForm() {
   const [code, setCode] = useState('');
@@ -10,8 +10,21 @@ export function CodeForm() {
   const handleSubmit = async (e: any) => {
     e.preventDefault();
     setCode(code);
-    const tx = await requestPayment(Number(code), transaction.product?.price ?? 0, transaction.product?.name ?? '');
-    console.log('[request payment] tx: ' + tx);
+
+    const response = await fetch('/api/requestPayment', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ 
+        code: Number(code),
+        amount: (transaction.product?.price ?? 0) * LAMPORTS_PER_SOL,
+        message: transaction.product?.name ?? ''
+      }),
+    });
+
+    const result = await response.json();
+    console.log('[request payment] response: ' + result);
   };
 
   return (

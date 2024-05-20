@@ -1,4 +1,4 @@
-import { initialize_transaction } from "@/clients/transaction_client"
+import { getTransaction, initialize_transaction } from "@/clients/transaction_client"
 import { generateCode } from "@/utils/code"
 import { generateSeedForCustomer, getKeypair } from "@/utils/transaction"
 import { roundDateForCustomer } from "@/utils/transaction_date"
@@ -69,8 +69,10 @@ export const TransactionProvider = ({
       setState(TransactionState.Initialized);
       setAccount(keypair.publicKey)
 
-      const subscriptionId = connection.onAccountChange(keypair.publicKey, (accountInfo) => {
-        console.log('Account ' + keypair.publicKey.toString() + ' changed. \n' + accountInfo);
+      const subscriptionId = connection.onAccountChange(keypair.publicKey, async (accountInfo) => {
+        console.log('Account ' + keypair.publicKey.toString() + ' has changed. \n' + accountInfo);
+        let account = await getTransaction(connection, keypair.publicKey);
+        console.log(account)
       });
       console.log('subscriptionId: ' + subscriptionId)
     }, [wallet.publicKey])
