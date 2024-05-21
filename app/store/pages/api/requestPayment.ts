@@ -1,22 +1,14 @@
 import { getTransaction } from "@/clients/transaction_client";
-import { get_program } from "@/utils/anchor";
+import { get_program, get_provider } from "@/utils/anchor";
 import { generateSeedsForStore, getKeypair } from "@/utils/transaction";
 import { roundDateForStore } from "@/utils/transaction_date";
-import { AnchorProvider, BN, web3 } from "@coral-xyz/anchor";
-import NodeWallet from "@coral-xyz/anchor/dist/cjs/nodewallet";
-import { Connection, Keypair, clusterApiUrl } from "@solana/web3.js";
+import { BN, web3 } from "@coral-xyz/anchor";
 
 export default async function handler(req, res) {
 
     const { code, amount, message } = req.body;
 
-    const connection = new Connection(clusterApiUrl("devnet"), {
-        commitment: "confirmed",
-    });
-    const wallet = new NodeWallet(Keypair.fromSecretKey(Uint8Array.from(process.env.STORE_KEYPAIR?.split(',').map(x => parseInt(x)) as number[])));
-    const provider = new AnchorProvider(connection, wallet, {
-        commitment: "confirmed",
-    });
+    const provider = get_provider(process);
 
     const now = new Date();
     const seeds = generateSeedsForStore(code, roundDateForStore(now));
