@@ -71,6 +71,29 @@ export async function initialize_transaction(
     return signature;
 }
 
+export async function confirm_transaction(
+    transactionPubkey: PublicKey,
+    payerWallet: WalletContextState,
+    storePubkey: PublicKey) : Promise<string | void>
+{
+    const payerPubkey = payerWallet.publicKey ?? PublicKey.default;
+
+    console.log("payerPubkey: " + payerPubkey);
+    console.log("transactionPubkey: " + transactionPubkey);
+    console.log("storePubkey: " + storePubkey);
+
+    const tx = program.methods.confirmTransaction()
+    .accounts({
+      signer: payerPubkey,
+      transaction: transactionPubkey,
+      store: storePubkey
+    })
+    .rpc()
+    .catch(e => console.error(e));
+
+    return tx;
+}
+
 export interface RawTransaction {
     discriminator: bigint;
     customer: PublicKey;

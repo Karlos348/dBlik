@@ -3,6 +3,7 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import { useBalance } from "@/contexts/BalanceContext";
 import WalletMultiButton from "@/components/WalletMultiButton";
 import { useTransaction } from "@/contexts/TransactionContext";
+import { ConfirmButton } from "@/components/ConfirmButton";
 
 export default function Home() {
   const {balance} = useBalance();
@@ -16,6 +17,7 @@ export default function Home() {
   tx: {transaction.tx}<br/>
   code: {transaction.isClient ? transaction.code : 'not generated'}<br/>
   state: {transaction.state.toString()}<br/>
+  <ConfirmButton/>
   <WalletMultiButton/>
 </main>
   )
