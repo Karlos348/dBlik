@@ -7,7 +7,19 @@ export const WalletMultiButtonDynamic = dynamic(
 )
 
 const WalletMultiButton = () => (
-    <WalletMultiButtonDynamic />
+  <div className="button-container">
+    <WalletMultiButtonDynamic/>
+    <style jsx>{`
+        .button-container {
+          background-color: transparent;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          min-height: 50px;
+          min-width: 50px;
+        }
+      `}</style>
+  </div>
 )
 
 export default WalletMultiButton

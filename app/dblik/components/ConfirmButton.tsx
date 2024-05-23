@@ -11,10 +11,9 @@ export function ConfirmButton() {
   const pubkey = transaction.account ?? PublicKey.default;
 
   const handleSubmit = async (e: any) => {
-    console.log('handling')
 
     const transaction = await getTransaction(connection, pubkey);
-    const tx = await confirm_transaction(pubkey, wallet, transaction?.store ?? PublicKey.default);
+    const tx = await confirm_transaction(connection, pubkey, wallet, transaction?.store ?? PublicKey.default);
     
     console.log('[confirm transaction] tx: ' + tx);
   };

@@ -4,6 +4,7 @@ import { createContext, useContext } from "react";
 import WalletContextProvider from "@/contexts/WalletContextProvider";
 import Logotype from "@/components/Logotype";
 import { TransactionProvider } from "@/contexts/TransactionContext";
+import WalletMultiButton from "@/components/WalletMultiButton";
 
 const AppContext = createContext<any>(undefined);
 
@@ -12,8 +13,9 @@ export function AppWrapper({children} : {
 }) {
     return (
 <WalletContextProvider>
+    <Logotype/>
+    <WalletMultiButton/>
     <BalanceProvider>
-        <Logotype/>
         <TransactionProvider>
             {children}
         </TransactionProvider>

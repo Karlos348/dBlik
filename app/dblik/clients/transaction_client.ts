@@ -72,6 +72,7 @@ export async function initialize_transaction(
 }
 
 export async function confirm_transaction(
+    connection: web3.Connection,
     transactionPubkey: PublicKey,
     payerWallet: WalletContextState,
     storePubkey: PublicKey) : Promise<string | void>
@@ -82,16 +83,28 @@ export async function confirm_transaction(
     console.log("transactionPubkey: " + transactionPubkey);
     console.log("storePubkey: " + storePubkey);
 
-    const tx = program.methods.confirmTransaction()
+    const instruction = await program.methods.confirmTransaction()
     .accounts({
       signer: payerPubkey,
       transaction: transactionPubkey,
       store: storePubkey
     })
-    .rpc()
-    .catch(e => console.error(e));
+    .instruction();
 
-    return tx;
+    let blockhash = await connection.getLatestBlockhash().then(res => res.blockhash);
+
+    const messageV0 = new TransactionMessage({
+        payerKey: payerPubkey,
+        recentBlockhash: blockhash,
+        instructions: [instruction]
+    }).compileToV0Message();
+
+    const tx = new VersionedTransaction(messageV0);
+
+    const signature = await payerWallet.sendTransaction(tx, connection).catch(e => console.error(e));
+
+
+    return signature;
 }
 
 export interface RawTransaction {

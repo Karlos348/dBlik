@@ -1,4 +1,5 @@
 import { getTransaction, initialize_transaction } from "@/clients/transaction_client"
+import { TransactionState } from "@/models/transactionState"
 import { generateCode } from "@/utils/code"
 import { generateSeedForCustomer, getKeypair } from "@/utils/transaction"
 import { roundDateForCustomer } from "@/utils/transaction_date"
@@ -7,7 +8,7 @@ import { PublicKey } from "@solana/web3.js"
 import { createContext, useCallback, useContext, useEffect, useState } from "react"
 
 type TransactionContextType = {
-  tx: string | null
+  tx: string[]
   code: number | null
   account: PublicKey | null
   state: TransactionState
@@ -15,14 +16,8 @@ type TransactionContextType = {
   initTransaction: () => Promise<void>
 }
 
-enum TransactionState {
-  New,
-  Initialized
-}
-
-  
 const TransactionContext = createContext<TransactionContextType>({
-  tx: null,
+  tx: [],
   code: null,
   account: null,
   state: TransactionState.New,
@@ -38,8 +33,8 @@ export const TransactionProvider = ({
     children: React.ReactNode
   }) => {
     const wallet = useWallet();
-    const [tx, setTx] = useState<string | null>(null);
-    const { connection } = useConnection();
+    const [tx, setTx] = useState<string[]>([]);
+    const {connection} = useConnection();
     const [isClient, setIsClient] = useState(false)
     const [code, setCode] = useState<number | null>(null)
     const [state, setState] = useState<TransactionState>(TransactionState.New)
@@ -47,7 +42,7 @@ export const TransactionProvider = ({
 
     const initTransaction = useCallback(async () => {
       if (wallet.publicKey == null) {
-        setTx(null); 
+        setTx([]); 
         return
       }
 
@@ -58,20 +53,21 @@ export const TransactionProvider = ({
       const keypair = getKeypair(seed);
 
       const transaction = await initialize_transaction(connection, keypair, wallet);
-      
+
       if (typeof(transaction) !== 'string') 
       {
         return
       }
 
       setCode(code);
-      setTx(transaction);
+      setTx(tx.concat([transaction]));
       setState(TransactionState.Initialized);
       setAccount(keypair.publicKey)
 
       const subscriptionId = connection.onAccountChange(keypair.publicKey, async (accountInfo) => {
         console.log('Account ' + keypair.publicKey.toString() + ' has changed. \n' + accountInfo);
         let account = await getTransaction(connection, keypair.publicKey);
+        
         console.log(account)
       });
       console.log('subscriptionId: ' + subscriptionId)
@@ -80,7 +76,7 @@ export const TransactionProvider = ({
     useEffect(() => {
       setIsClient(true)
 
-      if(tx != null) return
+      if(tx.length > 0) return
 
       initTransaction()
     }, [initTransaction])
