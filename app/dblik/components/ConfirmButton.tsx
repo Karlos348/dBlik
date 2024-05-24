@@ -2,6 +2,7 @@ import { useTransaction } from '@/contexts/TransactionContext';
 import { PublicKey } from '@solana/web3.js';
 import { confirm_transaction, getTransaction } from '@/clients/transaction_client';
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
+import { TransactionState } from '@/models/transaction';
 
 export function ConfirmButton() {
   const transaction = useTransaction();
@@ -20,9 +21,9 @@ export function ConfirmButton() {
 
   return (
     <>
-      {transaction.account === null
-        ? <div></div>
-        : <div><button onClick={handleSubmit}>confirm transaction</button></div>
+      {transaction.state == TransactionState.Pending
+        ? <div><button onClick={handleSubmit}>confirm transaction</button></div>
+        : <div></div>
         }
     </>
   );
