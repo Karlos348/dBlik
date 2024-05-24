@@ -13,9 +13,9 @@ export function AppWrapper({children} : {
 }) {
     return (
 <WalletContextProvider>
-    <Logotype/>
-    <WalletMultiButton/>
     <BalanceProvider>
+        <Logotype/>
+        <WalletMultiButton/>
         <TransactionProvider>
             {children}
         </TransactionProvider>

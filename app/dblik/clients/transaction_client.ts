@@ -4,6 +4,7 @@ import { WalletContextState } from "@solana/wallet-adapter-react";
 import { Keypair, PublicKey, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
 import { u32, u8, struct, seq } from '@solana/buffer-layout';
 import { u64, publicKey} from '@solana/buffer-layout-utils';
+import Transaction from "@/models/transaction";
 
 export async function getTransaction(connection: web3.Connection, account: PublicKey) : Promise<RawTransaction | null> 
 {
@@ -116,3 +117,16 @@ export interface RawTransaction {
     amount: number;
     message: number[]
   }
+
+export function map(transaction: RawTransaction) : Transaction
+{
+    let t = new Transaction();
+    t.customer = transaction.customer;
+    t.timestamp = transaction.timestamp;
+    t.amount = transaction.amount;
+    t.state = transaction.state;
+    t.message = String.fromCharCode(...transaction.message);
+    t.store = transaction.store;
+    t.timestamp = transaction.timestamp;
+    return t;
+}

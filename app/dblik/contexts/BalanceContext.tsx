@@ -3,8 +3,8 @@ import { LAMPORTS_PER_SOL } from "@solana/web3.js"
 import { createContext, useCallback, useContext, useEffect, useState } from "react"
 
 type BalanceContextType = {
-    balance: number
-fetchBalance: () => Promise<void>
+  balance: number
+  fetchBalance: () => Promise<void>
 }
   
 const BalanceContext = createContext<BalanceContextType>({
@@ -31,7 +31,7 @@ export const BalanceProvider = ({
       const balance = await connection.getBalance(publicKey, { commitment: 'confirmed'})
       setBalance(parseFloat((balance / LAMPORTS_PER_SOL).toString()))
     }, [publicKey])
-  
+
     useEffect(() => {
       fetchBalance()
     }, [fetchBalance])

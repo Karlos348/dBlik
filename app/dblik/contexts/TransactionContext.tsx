@@ -1,28 +1,30 @@
 import { getTransaction, initialize_transaction } from "@/clients/transaction_client"
-import { TransactionState } from "@/models/transactionState"
+import { TransactionState } from "@/models/transaction"
 import { generateCode } from "@/utils/code"
 import { generateSeedForCustomer, getKeypair } from "@/utils/transaction"
 import { roundDateForCustomer } from "@/utils/transaction_date"
 import { useConnection, useWallet } from "@solana/wallet-adapter-react"
-import { PublicKey } from "@solana/web3.js"
+import { Keypair, PublicKey } from "@solana/web3.js"
 import { createContext, useCallback, useContext, useEffect, useState } from "react"
 
 type TransactionContextType = {
   tx: string[]
   code: number | null
   account: PublicKey | null
-  state: TransactionState
+  state: TransactionState | null
   isClient: boolean
-  initTransaction: () => Promise<void>
+  init: (code: number, transaction: string, keypair: Keypair) => Promise<void>
+  update: (state: TransactionState | null) => Promise<void>
 }
 
 const TransactionContext = createContext<TransactionContextType>({
   tx: [],
   code: null,
   account: null,
-  state: TransactionState.New,
+  state: null,
   isClient: false,
-  initTransaction: async () => {},
+  init: async (code: number, transaction: string, keypair: Keypair) => {},
+  update: async (state: TransactionState | null) => {}
 })
 
 export const useTransaction = () => useContext(TransactionContext);
@@ -37,52 +39,34 @@ export const TransactionProvider = ({
     const {connection} = useConnection();
     const [isClient, setIsClient] = useState(false)
     const [code, setCode] = useState<number | null>(null)
-    const [state, setState] = useState<TransactionState>(TransactionState.New)
+    const [state, setState] = useState<TransactionState | null>(null)
     const [account, setAccount] = useState<PublicKey | null>(null)
 
-    const initTransaction = useCallback(async () => {
-      if (wallet.publicKey == null) {
-        setTx([]); 
-        return
-      }
-
-      const code = generateCode();
-      const now = new Date();
-      const roundedDate = roundDateForCustomer(now);
-      const seed = generateSeedForCustomer(code, roundedDate);
-      const keypair = getKeypair(seed);
-
-      const transaction = await initialize_transaction(connection, keypair, wallet);
-
-      if (typeof(transaction) !== 'string') 
-      {
-        return
-      }
-
+    const init = useCallback(async (code: number, transaction: string, keypair: Keypair) => {
+      setTx([]);
       setCode(code);
       setTx(tx.concat([transaction]));
       setState(TransactionState.Initialized);
       setAccount(keypair.publicKey)
-
-      const subscriptionId = connection.onAccountChange(keypair.publicKey, async (accountInfo) => {
-        console.log('Account ' + keypair.publicKey.toString() + ' has changed. \n' + accountInfo);
-        let account = await getTransaction(connection, keypair.publicKey);
-        
-        console.log(account)
-      });
-      console.log('subscriptionId: ' + subscriptionId)
     }, [wallet.publicKey])
-  
+
+    const update = useCallback(async (state: TransactionState | null) => {
+      setState(state);
+    }, [wallet.publicKey])
+
+
     useEffect(() => {
       setIsClient(true)
 
       if(tx.length > 0) return
 
-      initTransaction()
-    }, [initTransaction])
+      //initTransaction()
+    }, [init])
+
+    
 
     return (
-      <TransactionContext.Provider value={{ tx, code, account, initTransaction, state, isClient } }>
+      <TransactionContext.Provider value={{ tx, code, account, init, state, isClient, update } }>
         {children}
       </TransactionContext.Provider>
     )
