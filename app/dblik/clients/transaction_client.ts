@@ -8,7 +8,7 @@ import Transaction from "@/models/transaction";
 
 export async function getTransaction(connection: web3.Connection, account: PublicKey) : Promise<RawTransaction | null> 
 {
-    const acc = await connection.getAccountInfo(account);
+    const acc = await connection.getAccountInfo(account, 'confirmed');
     if(acc == null)
     {
         return null;

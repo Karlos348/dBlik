@@ -5,7 +5,7 @@ import { u64, publicKey} from '@solana/buffer-layout-utils';
 
 export async function getTransaction(provider: Provider, account: PublicKey) : Promise<RawTransaction | null> 
 {
-    const acc = await provider.connection.getAccountInfo(account);
+    const acc = await provider.connection.getAccountInfo(account, 'confirmed');
     if(acc == null)
     {
         return null;
