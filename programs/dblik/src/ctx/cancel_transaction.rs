@@ -31,6 +31,7 @@ impl<'info> CancelTransaction<'info> {
 
         **transaction_account_info.try_borrow_mut_lamports()? -= amount;
         **customer_account_info.try_borrow_mut_lamports()? += amount;
+        // todo return RETURNABLE_STORE_FEE 
 
         self.transaction.state = TransactionState::Canceled;
         Ok(())

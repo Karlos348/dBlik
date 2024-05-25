@@ -1,3 +1,4 @@
+use anchor_lang::solana_program::{program, system_instruction};
 use crate::*;
 use self::consts::{BASIC_TRANSACTION_SIZE, FREE_TRANSACTION_MESSAGE_SIZE, RETURNABLE_STORE_FEE};
 
@@ -28,8 +29,19 @@ impl<'info> RequestPayment<'info> {
         let transaction_account_info = self.transaction.to_account_info();
         let store_account_info = self.signer.to_account_info();
 
-        **store_account_info.try_borrow_mut_lamports()? -= RETURNABLE_STORE_FEE;
-        **transaction_account_info.try_borrow_mut_lamports()? += RETURNABLE_STORE_FEE;
+        let transfer_instruction = system_instruction::transfer(
+            &store.unwrap(),
+            &transaction_account_info.key(),
+            RETURNABLE_STORE_FEE);
+
+        program::invoke_signed(
+            &transfer_instruction,
+            &[
+                transaction_account_info,
+                store_account_info
+            ],
+            &[],
+        )?;
 
         self.transaction.assign_store(TimeProvider, *store.unwrap(), amount, message)
     }
