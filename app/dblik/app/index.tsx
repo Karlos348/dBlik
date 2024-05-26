@@ -1,10 +1,11 @@
 "use client";
-import { BalanceProvider } from "@/contexts/BalanceContext";
-import { createContext, useContext } from "react";
+import { BalanceProvider, useBalance } from "@/contexts/BalanceContext";
+import { createContext, useContext, useEffect, useState } from "react";
 import WalletContextProvider from "@/contexts/WalletContextProvider";
 import Logotype from "@/components/Logotype";
 import { TransactionProvider } from "@/contexts/TransactionContext";
-import WalletMultiButton from "@/components/WalletMultiButton";
+import WalletHeader from "@/components/WalletHeader";
+import Wallets from "@/components/Wallets";
 
 const AppContext = createContext<any>(undefined);
 
@@ -14,8 +15,9 @@ export function AppWrapper({children} : {
     return (
 <WalletContextProvider>
     <BalanceProvider>
+    <WalletHeader/>
         <Logotype/>
-        <WalletMultiButton/>
+        <Wallets/>
         <TransactionProvider>
             {children}
         </TransactionProvider>

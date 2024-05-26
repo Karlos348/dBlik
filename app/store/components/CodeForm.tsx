@@ -50,7 +50,8 @@ export function CodeForm() {
                     />
                   </div>
                   <div className="button-text">PAY</div>
-                </div></button>
+                </div>
+              </button>
             </form>
           </div>
 
