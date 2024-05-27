@@ -22,19 +22,28 @@ export const BalanceProvider = ({
     const { publicKey } = useWallet();
     const [balance, setBalance] = useState(0);
     const {connection } = useConnection();
-  
+    const [isClient, setIsClient] = useState<boolean>(false);
+
     const fetchBalance = useCallback(async () => {
+      if(!isClient) return;
+
       if (publicKey == null) {
         setBalance(0); 
         return
       }
+      
       const balance = await connection.getBalance(publicKey, { commitment: 'confirmed'})
       setBalance(parseFloat((balance / LAMPORTS_PER_SOL).toString()))
     }, [publicKey])
 
     useEffect(() => {
+      setIsClient(true)
       fetchBalance()
     }, [fetchBalance])
+
+    setInterval(() => {
+        fetchBalance()
+    }, 10000);
   
     return (
       <BalanceContext.Provider value={{ balance, fetchBalance }}>
