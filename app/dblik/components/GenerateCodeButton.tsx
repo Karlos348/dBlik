@@ -31,7 +31,7 @@ export function GenerateCodeButton() {
 
         const transaction = await initialize_transaction(connection, keypair, wallet);
 
-        init(code, transaction as string, keypair);
+        await init(code, transaction as string, keypair);
 
         console.log('subscriptionId: ' + subscriptionId)
     };
