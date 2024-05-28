@@ -41,7 +41,6 @@ impl<'info> ConfirmTransaction<'info> {
 
         **transaction_account_info.try_borrow_mut_lamports()? -= RETURNABLE_STORE_FEE;
         **store_account_info.try_borrow_mut_lamports()? += RETURNABLE_STORE_FEE;
-        // TODO separated endpoint to return the rest funds
 
         self.transaction.state = TransactionState::Succeed;
         Ok(())

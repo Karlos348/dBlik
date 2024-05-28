@@ -120,6 +120,27 @@ export type Dblik = {
         }
       ],
       "args": []
+    },
+    {
+      "name": "clearTransactionAccount",
+      "accounts": [
+        {
+          "name": "signer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "transaction",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
     }
   ],
   "accounts": [
@@ -159,6 +180,23 @@ export type Dblik = {
     }
   ],
   "types": [
+    {
+      "name": "ClearTransactionAccountErrors",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "NoSignerKey"
+          },
+          {
+            "name": "NotAuthenticated"
+          },
+          {
+            "name": "InvalidTransactionState"
+          }
+        ]
+      }
+    },
     {
       "name": "ConfirmTransactionErrors",
       "type": {
@@ -406,6 +444,27 @@ export const IDL: Dblik = {
         }
       ],
       "args": []
+    },
+    {
+      "name": "clearTransactionAccount",
+      "accounts": [
+        {
+          "name": "signer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "transaction",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
     }
   ],
   "accounts": [
@@ -445,6 +504,23 @@ export const IDL: Dblik = {
     }
   ],
   "types": [
+    {
+      "name": "ClearTransactionAccountErrors",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "NoSignerKey"
+          },
+          {
+            "name": "NotAuthenticated"
+          },
+          {
+            "name": "InvalidTransactionState"
+          }
+        ]
+      }
+    },
     {
       "name": "ConfirmTransactionErrors",
       "type": {

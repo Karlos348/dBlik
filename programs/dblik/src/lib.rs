@@ -32,4 +32,8 @@ pub mod dblik {
     pub fn expire_transaction(ctx: Context<ExpireTransaction>) -> Result<()> {
         ctx.accounts.process()
     }
+
+    pub fn clear_transaction_account(ctx: Context<ClearTransactionAccount>) -> Result<()> {
+        ctx.accounts.process()
+    }
 }

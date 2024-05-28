@@ -1,7 +1,7 @@
 use crate::*;
 
 #[derive(Accounts)]
-pub struct ExpireTransaction<'info> {
+pub struct ClearTransactionAccount<'info> {
     #[account(mut)]
     pub signer: Signer<'info>,
     #[account(mut)]
@@ -9,14 +9,21 @@ pub struct ExpireTransaction<'info> {
     pub system_program: Program<'info, System>,
 }
 
-impl<'info> ExpireTransaction<'info> {
+impl<'info> ClearTransactionAccount<'info> {
     pub fn process(&mut self) -> Result<()> {
 
-        require!(self.signer.signer_key().is_some(), ExpireTransactionErrors::NoSignerKey);
+        require!(self.signer.signer_key().is_some(), ClearTransactionAccountErrors::NoSignerKey);
         let caller = self.signer.key();
 
-        require!(caller == self.transaction.store, ExpireTransactionErrors::NotAuthenticated);
-        require!(self.transaction.state == TransactionState::Pending, ExpireTransactionErrors::InvalidTransactionState);
+        require!(caller == self.transaction.customer, ClearTransactionAccountErrors::NotAuthenticated);
+
+        let available_states = 
+        [
+            TransactionState::Canceled,
+            TransactionState::Expired,
+            TransactionState::Succeed
+        ];
+        require!(available_states.contains(&self.transaction.state), ClearTransactionAccountErrors::InvalidTransactionState);
 
         let amount = self.transaction.get_lamports();
         let transaction_account_info = self.transaction.to_account_info();
@@ -24,15 +31,12 @@ impl<'info> ExpireTransaction<'info> {
 
         **transaction_account_info.try_borrow_mut_lamports()? -= amount;
         **customer_account_info.try_borrow_mut_lamports()? += amount;
-        // todo return only RETURNABLE_STORE_FEE 
-
-        self.transaction.state = TransactionState::Expired;
         Ok(())
     }
 }
 
 #[error_code]
-pub enum ExpireTransactionErrors {
+pub enum ClearTransactionAccountErrors {
     #[msg("No signer key")]
     NoSignerKey,
     #[msg("Not authenticated")]
