@@ -1,4 +1,4 @@
-use crate::*;
+use crate::{consts::RETURNABLE_STORE_FEE, *};
 
 #[derive(Accounts)]
 pub struct ExpireTransaction<'info> {
@@ -6,6 +6,8 @@ pub struct ExpireTransaction<'info> {
     pub signer: Signer<'info>,
     #[account(mut)]
     pub transaction: Account<'info, Transaction>,
+    #[account(mut)]
+    pub store: SystemAccount<'info>,
     pub system_program: Program<'info, System>,
 }
 
@@ -16,15 +18,14 @@ impl<'info> ExpireTransaction<'info> {
         let caller = self.signer.key();
 
         require!(caller == self.transaction.store, ExpireTransactionErrors::NotAuthenticated);
+        require!(self.store.key() == self.transaction.store, ExpireTransactionErrors::StoreKeyConflict);
         require!(self.transaction.state == TransactionState::Pending, ExpireTransactionErrors::InvalidTransactionState);
 
-        let amount = self.transaction.get_lamports();
         let transaction_account_info = self.transaction.to_account_info();
-        let customer_account_info = self.signer.to_account_info();
+        let store_account_info = self.store.to_account_info();
 
-        **transaction_account_info.try_borrow_mut_lamports()? -= amount;
-        **customer_account_info.try_borrow_mut_lamports()? += amount;
-        // todo return only RETURNABLE_STORE_FEE 
+        **transaction_account_info.try_borrow_mut_lamports()? -= RETURNABLE_STORE_FEE;
+        **store_account_info.try_borrow_mut_lamports()? += RETURNABLE_STORE_FEE;
 
         self.transaction.state = TransactionState::Expired;
         Ok(())
@@ -38,5 +39,7 @@ pub enum ExpireTransactionErrors {
     #[msg("Not authenticated")]
     NotAuthenticated,
     #[msg("Invalid transaction state")]
-    InvalidTransactionState
+    InvalidTransactionState,
+    #[msg("Store key conflict")]
+    StoreKeyConflict
 }
