@@ -93,6 +93,11 @@ export type Dblik = {
           "isSigner": false
         },
         {
+          "name": "store",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "systemProgram",
           "isMut": false,
           "isSigner": false
@@ -110,6 +115,11 @@ export type Dblik = {
         },
         {
           "name": "transaction",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "store",
           "isMut": true,
           "isSigner": false
         },
@@ -230,6 +240,9 @@ export type Dblik = {
           },
           {
             "name": "InvalidTransactionState"
+          },
+          {
+            "name": "StoreKeyConflict"
           }
         ]
       }
@@ -318,6 +331,11 @@ export type Dblik = {
       "code": 6002,
       "name": "InvalidTransactionState",
       "msg": "Invalid transaction state"
+    },
+    {
+      "code": 6003,
+      "name": "StoreKeyConflict",
+      "msg": "Store key conflict"
     }
   ]
 };
@@ -417,6 +435,11 @@ export const IDL: Dblik = {
           "isSigner": false
         },
         {
+          "name": "store",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "systemProgram",
           "isMut": false,
           "isSigner": false
@@ -434,6 +457,11 @@ export const IDL: Dblik = {
         },
         {
           "name": "transaction",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "store",
           "isMut": true,
           "isSigner": false
         },
@@ -554,6 +582,9 @@ export const IDL: Dblik = {
           },
           {
             "name": "InvalidTransactionState"
+          },
+          {
+            "name": "StoreKeyConflict"
           }
         ]
       }
@@ -642,6 +673,11 @@ export const IDL: Dblik = {
       "code": 6002,
       "name": "InvalidTransactionState",
       "msg": "Invalid transaction state"
+    },
+    {
+      "code": 6003,
+      "name": "StoreKeyConflict",
+      "msg": "Store key conflict"
     }
   ]
 };
