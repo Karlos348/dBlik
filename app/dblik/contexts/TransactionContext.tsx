@@ -1,30 +1,24 @@
-import { getTransaction, initialize_transaction } from "@/clients/transaction_client"
-import { TransactionState } from "@/models/transaction"
-import { generateCode } from "@/utils/code"
-import { generateSeedForCustomer, getKeypair } from "@/utils/transaction"
-import { roundDateForCustomer } from "@/utils/transaction_date"
+import { RawTransaction, getTransaction, map } from "@/clients/transaction_client"
+import Transaction, { TransactionState } from "@/models/transaction"
 import { useConnection, useWallet } from "@solana/wallet-adapter-react"
 import { Keypair, PublicKey } from "@solana/web3.js"
 import { createContext, useCallback, useContext, useEffect, useState } from "react"
 
 type TransactionContextType = {
-  tx: string[]
-  code: number | null
-  account: PublicKey | null
-  state: TransactionState | null
-  isClient: boolean
-  init: (code: number, transaction: string, keypair: Keypair) => Promise<void>
-  update: (state: TransactionState | null) => Promise<void>
+  events: string[]
+  code?: number
+  account?: PublicKey
+  transaction?: Transaction
+  init: (code: number, event: string, keypair: Keypair) => Promise<void>
+  update: (transaction: Transaction) => Promise<void>
+  collectTransactionEvent: (event: string) => void
 }
 
 const TransactionContext = createContext<TransactionContextType>({
-  tx: [],
-  code: null,
-  account: null,
-  state: null,
-  isClient: false,
-  init: async (code: number, transaction: string, keypair: Keypair) => {},
-  update: async (state: TransactionState | null) => {}
+  events: [],
+  init: async (code: number, event: string, keypair: Keypair) => {},
+  update: async (transaction: Transaction) => {},
+  collectTransactionEvent: (event: string) => {},
 })
 
 export const useTransaction = () => useContext(TransactionContext);
@@ -35,38 +29,40 @@ export const TransactionProvider = ({
     children: React.ReactNode
   }) => {
     const wallet = useWallet();
-    const [tx, setTx] = useState<string[]>([]);
-    const {connection} = useConnection();
-    const [isClient, setIsClient] = useState(false)
-    const [code, setCode] = useState<number | null>(null)
-    const [state, setState] = useState<TransactionState | null>(null)
-    const [account, setAccount] = useState<PublicKey | null>(null)
+    const { connection } = useConnection();
+    const [code, setCode] = useState<number>()
+    const [events, setEvents] = useState<string[]>([]);
+    const [account, setAccount] = useState<PublicKey>();
+    const [transaction, setTransaction] = useState<Transaction>();
 
-    const init = useCallback(async (code: number, transaction: string, keypair: Keypair) => {
-      setTx([]);
+    const init = async (code: number, event: string, keypair: Keypair) => {
       setCode(code);
-      setTx(tx.concat([transaction]));
-      setState(TransactionState.Initialized);
+      setEvents(events.concat(event))
       setAccount(keypair.publicKey)
-    }, [wallet.publicKey])
+      setTransaction(new Transaction(keypair.publicKey, TransactionState.Initialized));
+    };
 
-    const update = useCallback(async (state: TransactionState | null) => {
-      setState(state);
-    }, [wallet.publicKey])
+    const collectTransactionEvent = (event: string) => {
+      setEvents(events.concat(event))
+    };
 
+    const update = useCallback(async () => {
+      let rawTransaction = await getTransaction(connection, account as PublicKey);
+      const transaction = map(rawTransaction as RawTransaction);
+      transaction.update(transaction.customer, transaction.state, transaction.timestamp, transaction.store, transaction.amount, transaction.message);
+      setTransaction(transaction);
+    }, [events])
 
     useEffect(() => {
-      setIsClient(true)
+      // setIsClient(true)
 
-      if(tx.length > 0) return
+      // if(tx.length > 0) return
 
       //initTransaction()
     }, [init])
 
-    
-
     return (
-      <TransactionContext.Provider value={{ tx, code, account, init, state, isClient, update } }>
+      <TransactionContext.Provider value={{ events, code, transaction, account, init, collectTransactionEvent, update } }>
         {children}
       </TransactionContext.Provider>
     )

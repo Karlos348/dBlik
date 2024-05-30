@@ -6,7 +6,7 @@ import { generateSeedForCustomer, getKeypair } from '@/utils/transaction';
 import { roundDateForCustomer } from '@/utils/transaction_date';
 
 export function GenerateCodeButton() {
-    const { code, init, update } = useTransaction();
+    const { code, init, update, transaction } = useTransaction();
     const wallet = useWallet();
     const { connection } = useConnection();
 
@@ -26,7 +26,7 @@ export function GenerateCodeButton() {
             let account = await getTransaction(connection, keypair.publicKey);
             const transaction = map(account as RawTransaction);
             console.log(transaction)
-            await update(transaction.state ?? null);
+            await update(transaction ?? null);
         });
 
         const transaction = await initialize_transaction(connection, keypair, wallet);
@@ -38,7 +38,7 @@ export function GenerateCodeButton() {
 
     return (
         <>
-            {code === null
+            {code === undefined
                 ? <button
                     className="flex items-center justify-center w-96 h-16 text-xl px-4 py-2 border border-gray-400 text-gray-700 rounded-md hover:shadow-md focus:outline-none focus:ring focus:ring-gray-200 mt-12 gray-border gradient-shadow"
                     onClick={handleSubmit}>

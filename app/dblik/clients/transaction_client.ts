@@ -120,13 +120,10 @@ export interface RawTransaction {
 
 export function map(transaction: RawTransaction) : Transaction
 {
-    let t = new Transaction();
-    t.customer = transaction.customer;
-    t.timestamp = transaction.timestamp;
-    t.amount = transaction.amount;
-    t.state = transaction.state;
-    t.message = String.fromCharCode(...transaction.message);
-    t.store = transaction.store;
-    t.timestamp = transaction.timestamp;
-    return t;
+    return new Transaction(transaction.customer, 
+        transaction.state, 
+        transaction.timestamp, 
+        transaction.store, 
+        transaction.amount, 
+        String.fromCharCode(...transaction.message));
 }

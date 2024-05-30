@@ -7,7 +7,7 @@ export default function Wallets() {
 
     useEffect(() => {
         setIsClient(true);
-    })
+    }, [])
 
     const x = wallets.filter((wallet) => wallet.readyState === "Installed");
     const y = wallets.length;
@@ -18,12 +18,14 @@ export default function Wallets() {
                 {wallets.map((wallet) =>
                     wallet.readyState === "Installed"
                     ? <button
+                        key={wallet.adapter.name}
                         className="flex items-center justify-center w-96 h-16 text-xl px-4 py-2 border border-gray-400 text-gray-700 rounded-md hover:shadow-md focus:outline-none focus:ring focus:ring-gray-200 mt-4"
                         onClick={() => select(wallet.adapter.name)}>
                         <img src={wallet.adapter.icon} alt={wallet.adapter.name} className="w-6 h-6 mr-2" />
                         <span>{wallet.adapter.name}</span>
                     </button>
                     : <button
+                        key={wallet.adapter.name}
                         className="disabled:opacity-90 grayscale flex items-center justify-center w-96 h-16 text-xl px-4 py-2 border border-gray-400 text-gray-700 rounded-md focus:outline-none focus:ring focus:ring-gray-200 mt-4"
                         onClick={() => select(wallet.adapter.name)}
                         disabled>
