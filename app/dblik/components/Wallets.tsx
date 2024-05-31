@@ -9,8 +9,6 @@ export default function Wallets() {
         setIsClient(true);
     }, [])
 
-    const x = wallets.filter((wallet) => wallet.readyState === "Installed");
-    const y = wallets.length;
     return !connected && isClient
         ? (
             <div className="flex min-h-screen flex-col items-center mt-16">
