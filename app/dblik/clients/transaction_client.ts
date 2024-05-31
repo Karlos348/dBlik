@@ -6,12 +6,17 @@ import { u32, u8, struct, seq } from '@solana/buffer-layout';
 import { u64, publicKey} from '@solana/buffer-layout-utils';
 import Transaction from "@/models/transaction";
 
-export async function getTransaction(connection: web3.Connection, account: PublicKey) : Promise<RawTransaction | null> 
+export async function getTransaction(connection: web3.Connection, account: PublicKey) : Promise<RawTransaction | undefined> 
 {
+    if(account === undefined)
+    {
+        return undefined;
+    }
+
     const acc = await connection.getAccountInfo(account, 'confirmed');
     if(acc == null)
     {
-        return null;
+        return undefined;
     }
   
     const data = struct<RawTransaction>([
@@ -120,10 +125,10 @@ export interface RawTransaction {
 
 export function map(transaction: RawTransaction) : Transaction
 {
-    return new Transaction(transaction.customer, 
-        transaction.state, 
-        transaction.timestamp, 
-        transaction.store, 
-        transaction.amount, 
-        String.fromCharCode(...transaction.message));
+    return new Transaction(transaction?.customer, 
+        transaction?.state, 
+        transaction?.timestamp, 
+        transaction?.store, 
+        transaction?.amount, 
+        String.fromCharCode(...transaction?.message ?? ""));
 }

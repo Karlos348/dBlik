@@ -21,17 +21,17 @@ export function GenerateCodeButton() {
         const seed = generateSeedForCustomer(code, roundedDate);
         const keypair = getKeypair(seed);
 
+        const transaction = await initialize_transaction(connection, keypair, wallet);
+
+        await init(code, transaction as string, keypair);
+
         const subscriptionId = connection.onAccountChange(keypair.publicKey, async (accountInfo) => {
             console.log('Account ' + keypair.publicKey.toString() + ' has changed. \n' + accountInfo);
             let account = await getTransaction(connection, keypair.publicKey);
             const transaction = map(account as RawTransaction);
             console.log(transaction)
-            await update(transaction ?? null);
+            await update(transaction);
         });
-
-        const transaction = await initialize_transaction(connection, keypair, wallet);
-
-        await init(code, transaction as string, keypair);
 
         console.log('subscriptionId: ' + subscriptionId)
     };

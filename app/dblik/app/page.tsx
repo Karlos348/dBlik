@@ -15,7 +15,7 @@ export default function Home() {
   return (
     <main className="flex min-h-screen flex-col items-center">
       {connected ? <>
-        {transaction.code !== null 
+        {transaction.code !== undefined 
           ? <div className="flex items-center justify-center w-96 h-16 text-4xl px-4 py-2 border border-gray-400 text-gray-700 rounded-md hover:shadow-md focus:outline-none focus:ring focus:ring-gray-200 mt-12 gray-border">
               <span className='uppercase tracking-widest'>{transaction.code}</span>
             </div> 
