@@ -34,27 +34,48 @@ export const TransactionProvider = ({
     const [events, setEvents] = useState<string[]>([]);
     const [account, setAccount] = useState<PublicKey>();
     const [transaction, setTransaction] = useState<Transaction>();
+    const [isClient, setIsClient] = useState<boolean>(false);
 
-    const init = async (code: number, event: string, keypair: Keypair) => {
+    const init = useCallback(async (code: number, event: string, keypair: Keypair) => {
       setCode(code);
       setEvents(events.concat(event))
       setAccount(keypair.publicKey)
       setTransaction(new Transaction(keypair.publicKey, TransactionState.Initialized));
-    };
 
-    const collectTransactionEvent = (event: string) => {
-      setEvents(events.concat(event))
-    };
+      const subscriptionId = connection.onAccountChange(keypair.publicKey, async (accountInfo) => {
+        console.log('Account ' + keypair.publicKey.toString() + ' has changed. \n' + accountInfo);
+        let account = await getTransaction(connection, keypair.publicKey);
+        const transaction = map(account as RawTransaction);
+        setTransaction(transaction)
+    });
+    }, [events])
+
+    const collectTransactionEvent = useCallback(async (event: string) => {
+      if(isClient)
+      {
+        setEvents(events.concat(event))
+        console.log(events)
+        let rawTransaction = await getTransaction(connection, account as PublicKey);
+        const transaction = map(rawTransaction as RawTransaction);
+        transaction.update(transaction.customer, transaction.state, transaction.timestamp, transaction.store, transaction.amount, transaction.message);
+        setTransaction(transaction);
+      }
+      
+    }, []);
 
     const update = useCallback(async () => {
-      let rawTransaction = await getTransaction(connection, account as PublicKey);
-      const transaction = map(rawTransaction as RawTransaction);
-      transaction.update(transaction.customer, transaction.state, transaction.timestamp, transaction.store, transaction.amount, transaction.message);
-      setTransaction(transaction);
+      if(isClient)
+      {
+        let rawTransaction = await getTransaction(connection, account as PublicKey);
+        const transaction = map(rawTransaction as RawTransaction);
+        transaction.update(transaction.customer, transaction.state, transaction.timestamp, transaction.store, transaction.amount, transaction.message);
+        setTransaction(transaction);
+      }
+      
     }, [events])
 
     useEffect(() => {
-      // setIsClient(true)
+      setIsClient(true)
 
       // if(tx.length > 0) return
 

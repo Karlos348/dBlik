@@ -21,9 +21,10 @@ export function ConfirmButton() {
     console.log('[confirm transaction] tx: ' + tx);
   };
 
+
   return (
     <>
-      {transaction?.state == TransactionState.Pending
+      {transaction?.state === TransactionState.Pending
         ? <div><button onClick={handleSubmit}>confirm transaction</button></div>
         : <div></div>
         }
