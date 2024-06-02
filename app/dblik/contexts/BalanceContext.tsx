@@ -3,13 +3,12 @@ import { LAMPORTS_PER_SOL } from "@solana/web3.js"
 import { createContext, useCallback, useContext, useEffect, useState } from "react"
 
 type BalanceContextType = {
-  balance: number
+  balance?: number
   fetchBalance: () => Promise<void>
 }
   
 const BalanceContext = createContext<BalanceContextType>({
-    balance: 0,
-    fetchBalance: async () => {},
+    fetchBalance: async () => {}
 })
 
 export const useBalance = () => useContext(BalanceContext);
@@ -20,7 +19,7 @@ export const BalanceProvider = ({
     children: React.ReactNode
   }) => {
     const { publicKey } = useWallet();
-    const [balance, setBalance] = useState(0);
+    const [balance, setBalance] = useState<number>();
     const {connection } = useConnection();
     const [isClient, setIsClient] = useState<boolean>(false);
 
@@ -38,13 +37,12 @@ export const BalanceProvider = ({
 
     useEffect(() => {
       setIsClient(true)
-      fetchBalance()
-    }, [fetchBalance])
-
-    setInterval(() => {
+      fetchBalance();
+      setInterval(() => {
         fetchBalance()
-    }, 10000);
-  
+      }, 10000);
+    }, [publicKey])
+
     return (
       <BalanceContext.Provider value={{ balance, fetchBalance }}>
         {children}

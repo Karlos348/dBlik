@@ -1,24 +1,26 @@
-import { RawTransaction, getTransaction, map } from "@/clients/transaction_client"
+import { RawTransaction, confirm_transaction, getTransaction, initialize_transaction, map } from "@/clients/transaction_client"
 import Transaction, { TransactionState } from "@/models/transaction"
+import { generateCode } from "@/utils/code"
+import { generateSeedForCustomer, getKeypair } from "@/utils/transaction"
+import { roundDateForCustomer } from "@/utils/transaction_date"
 import { useConnection, useWallet } from "@solana/wallet-adapter-react"
-import { Keypair, PublicKey } from "@solana/web3.js"
+import { PublicKey } from "@solana/web3.js"
 import { createContext, useCallback, useContext, useEffect, useState } from "react"
 
 type TransactionContextType = {
-  events: string[]
   code?: number
-  account?: PublicKey
   transaction?: Transaction
-  init: (code: number, event: string, keypair: Keypair) => Promise<void>
-  update: (transaction: Transaction) => Promise<void>
-  collectTransactionEvent: (event: string) => void
+  init: () => Promise<void>
+  confirm: () => Promise<void>
+  cancel: () => Promise<void>,
+  closeTransaction: () => Promise<void>
 }
 
 const TransactionContext = createContext<TransactionContextType>({
-  events: [],
-  init: async (code: number, event: string, keypair: Keypair) => {},
-  update: async (transaction: Transaction) => {},
-  collectTransactionEvent: (event: string) => {},
+  init: async () => {},
+  confirm: async () => {},
+  cancel: async () => {},
+  closeTransaction: async () => {}
 })
 
 export const useTransaction = () => useContext(TransactionContext);
@@ -30,60 +32,56 @@ export const TransactionProvider = ({
   }) => {
     const wallet = useWallet();
     const { connection } = useConnection();
-    const [code, setCode] = useState<number>()
-    const [events, setEvents] = useState<string[]>([]);
+    const [subscriptionId, setSubscriptionId] = useState<number>();
+    const [code, setCode] = useState<number>();
     const [account, setAccount] = useState<PublicKey>();
     const [transaction, setTransaction] = useState<Transaction>();
-    const [isClient, setIsClient] = useState<boolean>(false);
 
-    const init = useCallback(async (code: number, event: string, keypair: Keypair) => {
+    const init = useCallback(async () => {
+      const code = generateCode();
+      const now = new Date();
+      const roundedDate = roundDateForCustomer(now);
+      const seed = generateSeedForCustomer(code, roundedDate);
+      const keypair = getKeypair(seed);
+
+      const signature = await initialize_transaction(connection, keypair, wallet);
+
       setCode(code);
-      setEvents(events.concat(event))
       setAccount(keypair.publicKey)
       setTransaction(new Transaction(keypair.publicKey, TransactionState.Initialized));
 
       const subscriptionId = connection.onAccountChange(keypair.publicKey, async (accountInfo) => {
         console.log('Account ' + keypair.publicKey.toString() + ' has changed. \n' + accountInfo);
-        let account = await getTransaction(connection, keypair.publicKey);
-        const transaction = map(account as RawTransaction);
-        setTransaction(transaction)
-    });
-    }, [events])
+        await update(keypair.publicKey);
+      });
+      
+      setSubscriptionId(subscriptionId);
+  }, [connection, wallet]);
 
-    const collectTransactionEvent = useCallback(async (event: string) => {
-      if(isClient)
-      {
-        setEvents(events.concat(event))
-        console.log(events)
+    const confirm = async () => {
+      await confirm_transaction(connection, account as PublicKey, wallet, transaction?.store ?? PublicKey.default);
+    };
+
+    const cancel = async () => {
+      // todo
+    };
+
+    const closeTransaction = async () => {
+      // todo
+      connection.removeProgramAccountChangeListener(subscriptionId as number)
+    };
+
+    const update = async (account: PublicKey) => {
         let rawTransaction = await getTransaction(connection, account as PublicKey);
+        console.log(rawTransaction)
         const transaction = map(rawTransaction as RawTransaction);
         transaction.update(transaction.customer, transaction.state, transaction.timestamp, transaction.store, transaction.amount, transaction.message);
         setTransaction(transaction);
-      }
-      
-    }, []);
-
-    const update = useCallback(async () => {
-      if(isClient)
-      {
-        let rawTransaction = await getTransaction(connection, account as PublicKey);
-        const transaction = map(rawTransaction as RawTransaction);
-        transaction.update(transaction.customer, transaction.state, transaction.timestamp, transaction.store, transaction.amount, transaction.message);
-        setTransaction(transaction);
-      }
-      
-    }, [events])
-
-    useEffect(() => {
-      setIsClient(true)
-
-      // if(tx.length > 0) return
-
-      //initTransaction()
-    }, [init])
+        console.log(transaction);
+       };
 
     return (
-      <TransactionContext.Provider value={{ events, code, transaction, account, init, collectTransactionEvent, update } }>
+      <TransactionContext.Provider value={{ code, transaction, init, confirm, cancel, closeTransaction } }>
         {children}
       </TransactionContext.Provider>
     )

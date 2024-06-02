@@ -9,7 +9,11 @@ export default function WalletHeader() {
 <header className="main-header border-gray-400">
     <div className="container min-h-12">
         <div className="left-section">{connected ? <>Address: {publicKey?.toString()}</> : <></>}</div>
-        <div className="center-section">{connected ? <>Balance: {balance.toFixed(4)} SOL</> : <>Disconnected</>}</div>
+        <div className="center-section">{connected 
+            ? balance === undefined
+                ? <>Retrieving balance...</>
+                : <>Balance: {balance?.toFixed(4)} SOL</>
+            : <>Disconnected</>}</div>
         <div className="right-section">
             {connected 
             ? 

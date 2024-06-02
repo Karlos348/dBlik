@@ -1,29 +1,10 @@
 import { useTransaction } from '@/contexts/TransactionContext';
-import { RawTransaction, getTransaction, initialize_transaction, map } from '@/clients/transaction_client';
-import { useConnection, useWallet } from '@solana/wallet-adapter-react';
-import { generateCode } from '@/utils/code';
-import { generateSeedForCustomer, getKeypair } from '@/utils/transaction';
-import { roundDateForCustomer } from '@/utils/transaction_date';
 
 export function GenerateCodeButton() {
-    const { code, init, update, transaction } = useTransaction();
-    const wallet = useWallet();
-    const { connection } = useConnection();
+    const { code, init } = useTransaction();
 
     const handleSubmit = async (e: any) => {
-        if (wallet.publicKey == null) {
-            return
-        }
-
-        const code = generateCode();
-        const now = new Date();
-        const roundedDate = roundDateForCustomer(now);
-        const seed = generateSeedForCustomer(code, roundedDate);
-        const keypair = getKeypair(seed);
-
-        const transaction = await initialize_transaction(connection, keypair, wallet);
-
-        await init(code, transaction as string, keypair);
+        await init();
     };
 
     return (

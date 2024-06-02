@@ -9,9 +9,6 @@ export default function Home() {
   const transaction = useTransaction();
   const {connected} = useWallet();
 
-  console.log(transaction.events);
-  console.log('state: ' + transaction.transaction?.state === undefined ? 'not initialized' : TransactionState[transaction.transaction?.state as TransactionState]);
-
   return (
     <main className="flex min-h-screen flex-col items-center">
       {connected ? <>
