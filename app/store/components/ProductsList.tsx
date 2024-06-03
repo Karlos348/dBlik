@@ -5,7 +5,7 @@ export function ProductsList() {
 
   const products = [
     new Product(1, 'Simba', '/products/100.jpg', 0.05),
-    new Product(2, 'Médor', '/products/101.jpg', 0.08),
+    new Product(2, 'Medor', '/products/101.jpg', 0.08),
     new Product(3, 'Rex', '/products/102.jpg', 0.5),
     new Product(4, 'Fido', '/products/103.jpg', 0.13),
     new Product(5, 'Iggy', '/products/104.jpg', 0.22),
@@ -13,7 +13,7 @@ export function ProductsList() {
     new Product(7, 'Sharik', '/products/106.jpg', 0.24),
     new Product(8, 'Pochi', '/products/107.jpg', 0.01),
     new Product(9, 'Burek', '/products/108.jpg', 10),
-    new Product(10, 'Xiǎobái', '/products/109.jpg', 0.1),
+    new Product(10, 'Xiaobai', '/products/109.jpg', 0.1),
     new Product(11, 'Max', '/products/110.jpg', 0.01),
     new Product(12, 'Bubi', '/products/111.jpg', 0.01),
     new Product(13, 'Bosse', '/products/112.jpg', 0.02),
