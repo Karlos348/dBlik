@@ -118,5 +118,15 @@ export function map(transaction: RawTransaction): Transaction {
         transaction?.timestamp,
         transaction?.store,
         transaction?.amount,
-        String.fromCharCode(...transaction?.message ?? "").trim());
+        String.fromCharCode(...removeTrailingZeros(transaction?.message ?? "")));
+}
+
+function removeTrailingZeros(arr: number[]): number[] {
+    let endIndex = arr.length;
+
+    while (endIndex > 0 && arr[endIndex - 1] === 0) {
+        endIndex--;
+    }
+
+    return arr.slice(0, endIndex);
 }
