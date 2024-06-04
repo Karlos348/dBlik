@@ -2,9 +2,9 @@
 import { useTransaction } from "@/contexts/TransactionContext";
 import { GenerateCodeButton } from "@/components/GenerateCodeButton";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { IncomingTransactionBox } from "@/components/IncomingTransactionBox";
 import Timer from "@/components/Timer";
 import { TransactionState } from "@/models/transaction";
+import { PaymentRequestBox } from "@/components/PaymentRequestBox";
 
 export default function Home() {
   const transaction = useTransaction();
@@ -20,7 +20,7 @@ export default function Home() {
           : <></>}
         <GenerateCodeButton />
         <Timer/>
-        <IncomingTransactionBox />
+        <PaymentRequestBox />
       </>
       : <></>}
     </main>

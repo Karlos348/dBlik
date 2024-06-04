@@ -2,7 +2,7 @@ import { useTransaction } from '@/contexts/TransactionContext';
 import { TransactionState } from '@/models/transaction';
 import { LAMPORTS_PER_SOL } from '@solana/web3.js';
 
-export function IncomingTransactionBox() {
+export function PaymentRequestBox() {
     const { transaction, confirm, cancel } = useTransaction();
 
     const handleConfirm = async (e: any) => {
@@ -20,9 +20,11 @@ export function IncomingTransactionBox() {
         <>
             {transaction?.state === TransactionState.Pending
                 ? <div className="box w-96 mx-auto mt-12 p-6 border border-gray-400 rounded-md shadow-lg">
-                    <h2 className="text-xl uppercase tracking-widest mb-4 text-center">Incoming Transaction</h2>
-                    <p className="text-lg mb-2">Message: {transaction?.message}</p>
-                    <p className="text-lg mb-4">Amount: {amount} SOL</p>
+                    <h2 className="text-2xl uppercase tracking-widest mb-4 text-center">payment request</h2>
+                    <p className="text-m uppercase text-center tracking-wide">message</p>
+                    <p className="text-xl mb-4 text-center">{transaction?.message}</p>
+                    <p className="text-m uppercase text-center tracking-wide">amount</p>
+                    <p className="text-xl mb-4 text-center">{amount} SOL</p>
                     <div className="flex justify-around mt-6">
                         <button
                             onClick={handleCancel}
@@ -47,6 +49,10 @@ export function IncomingTransactionBox() {
                 </div>
                 : transaction?.state === TransactionState.Succeed
                     ? <div className="box w-96 mx-auto mt-12 p-6 border border-gray-400 rounded-md shadow-lg">
+                        <p className="text-m uppercase text-center tracking-wide">message</p>
+                    <p className="text-xl mb-4 text-center">{transaction?.message}</p>
+                    <p className="text-m uppercase text-center tracking-wide">amount</p>
+                    <p className="text-xl mb-4 text-center">{amount} SOL</p>
                         <h2 className="text-xl uppercase tracking-widest text-center">Transaction completed successfully</h2>
                         <style jsx>{`
             .box {
