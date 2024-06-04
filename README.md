@@ -21,6 +21,7 @@ The main goal is to learn about smart contracts and work in other languages than
 
 ![overview](assets/overview.svg)
 
+![animation](assets/animation.gif)
 </div>
 
 ## Roadmap
