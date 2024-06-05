@@ -1,4 +1,4 @@
-use crate::consts::TRANSACTION_EXPIRATION_TIME_IN_SECONDS;
+use crate::consts::{TIME_TO_RETURN_STORE_FEE_IN_SECONDS, TRANSACTION_EXPIRATION_TIME_IN_SECONDS};
 use crate::*;
 use anchor_lang::Discriminator;
 use self::consts::DEFAULT_PUBKEY;
@@ -16,6 +16,7 @@ pub struct Transaction {
 pub trait TransactionAccount {
     fn new_serialized_transaction(customer: Pubkey, time_provider: impl Time) -> Result<Vec<u8>>;
     fn assign_store(&mut self, time_provider: impl Time, store: Pubkey, amount: u64, message: String) -> Result<()>;
+    fn expire(&mut self, time_provider: impl Time) -> Result<()>;
 }
 
 impl TransactionAccount for Account<'_, Transaction> {
@@ -54,6 +55,16 @@ impl TransactionAccount for Account<'_, Transaction> {
         self.message = message;
         self.state = TransactionState::Pending;
         Ok(())
+    }
+
+    fn expire(&mut self, time_provider: impl Time) -> Result<()> {
+
+        let now = time_provider.get_timestamp();
+        require!(now > self.timestamp + TIME_TO_RETURN_STORE_FEE_IN_SECONDS, TransactionErrors::ExpirationRequestedTooEarly);
+        require!(self.state == TransactionState::Initialized, TransactionErrors::InvalidTransactionState);
+
+        self.state = TransactionState::Expired;
+        Ok(())
     }  
 }
 
@@ -73,6 +84,8 @@ pub enum TransactionErrors {
     InvalidTransactionState,
     #[msg("Transaction expired")]
     TransactionExpired,
+    #[msg("Time to return fee has not passed yet")]
+    ExpirationRequestedTooEarly,
     #[msg("Accounts cannot be the same")]
     AccountsConflict
 }

@@ -27,8 +27,7 @@ impl<'info> ExpireTransaction<'info> {
         **transaction_account_info.try_borrow_mut_lamports()? -= RETURNABLE_STORE_FEE;
         **store_account_info.try_borrow_mut_lamports()? += RETURNABLE_STORE_FEE;
 
-        self.transaction.state = TransactionState::Expired;
-        Ok(())
+        self.transaction.expire(TimeProvider)
     }
 }
 
