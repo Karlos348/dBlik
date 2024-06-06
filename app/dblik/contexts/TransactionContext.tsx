@@ -7,7 +7,6 @@ import { roundDateForCustomer } from "@/utils/transaction_date"
 import { useConnection, useWallet } from "@solana/wallet-adapter-react"
 import { PublicKey } from "@solana/web3.js"
 import { createContext, useCallback, useContext, useEffect, useState } from "react"
-import { useBalance } from "./BalanceContext"
 
 type TransactionContextType = {
   code?: number
@@ -36,7 +35,6 @@ export const TransactionProvider = ({
 }) => {
   const wallet = useWallet();
   const { connection } = useConnection();
-  const { fetchBalance } = useBalance();
   const [subscriptionId, setSubscriptionId] = useState<number>();
   const [code, setCode] = useState<number>();
   const [timeLeft, setTimeLeft] = useState(TRANSACTION_EXPIRATION_TIME_IN_SECONDS);
@@ -57,12 +55,12 @@ export const TransactionProvider = ({
     setAccount(keypair.publicKey)
     setTransaction(new Transaction(keypair.publicKey, TransactionState.Initialized));
 
-    const subscriptionId = connection.onAccountChange(keypair.publicKey, async (accountInfo) => {
+    const subId = connection.onAccountChange(keypair.publicKey, async (accountInfo) => {
       console.log('Account ' + keypair.publicKey.toString() + ' has changed. \n' + accountInfo);
       await update(keypair.publicKey);
-    });
+    }, 'confirmed');
 
-    setSubscriptionId(subscriptionId);
+    setSubscriptionId(subId);
   }, [connection, wallet]);
 
   const confirm = async () => {
@@ -130,11 +128,6 @@ export const TransactionProvider = ({
 
     closeTransactionAccount();
   }, [transaction]);
-
-
-  useEffect(() => {
-    fetchBalance();
-  }, [transaction, code])
 
   return (
     <TransactionContext.Provider value={{ code, transaction, timeLeft, init, confirm, cancel, closeTransactionAccount }}>
