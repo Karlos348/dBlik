@@ -56,6 +56,6 @@ export enum TransactionState {
     Initialized,
     Pending,
     Succeed,
-    Expired,
+    Timeout,
     Canceled
 }

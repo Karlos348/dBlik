@@ -106,7 +106,7 @@ export type Dblik = {
       "args": []
     },
     {
-      "name": "expireTransaction",
+      "name": "setTimeout",
       "accounts": [
         {
           "name": "signer",
@@ -132,7 +132,7 @@ export type Dblik = {
       "args": []
     },
     {
-      "name": "clearTransactionAccount",
+      "name": "closeTransactionAccount",
       "accounts": [
         {
           "name": "signer",
@@ -191,7 +191,7 @@ export type Dblik = {
   ],
   "types": [
     {
-      "name": "ClearTransactionAccountErrors",
+      "name": "CloseTransactionAccountErrors",
       "type": {
         "kind": "enum",
         "variants": [
@@ -228,26 +228,6 @@ export type Dblik = {
       }
     },
     {
-      "name": "ExpireTransactionErrors",
-      "type": {
-        "kind": "enum",
-        "variants": [
-          {
-            "name": "NoSignerKey"
-          },
-          {
-            "name": "NotAuthenticated"
-          },
-          {
-            "name": "InvalidTransactionState"
-          },
-          {
-            "name": "StoreKeyConflict"
-          }
-        ]
-      }
-    },
-    {
       "name": "InitializeTransactionErrors",
       "type": {
         "kind": "enum",
@@ -276,6 +256,26 @@ export type Dblik = {
       }
     },
     {
+      "name": "SetTimeoutErrors",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "NoSignerKey"
+          },
+          {
+            "name": "NotAuthenticated"
+          },
+          {
+            "name": "InvalidTransactionState"
+          },
+          {
+            "name": "StoreKeyConflict"
+          }
+        ]
+      }
+    },
+    {
       "name": "TransactionState",
       "type": {
         "kind": "enum",
@@ -290,7 +290,7 @@ export type Dblik = {
             "name": "Succeed"
           },
           {
-            "name": "Expired"
+            "name": "Timeout"
           },
           {
             "name": "Canceled"
@@ -308,6 +308,9 @@ export type Dblik = {
           },
           {
             "name": "TransactionExpired"
+          },
+          {
+            "name": "TimeoutRequestedTooEarly"
           },
           {
             "name": "AccountsConflict"
@@ -448,7 +451,7 @@ export const IDL: Dblik = {
       "args": []
     },
     {
-      "name": "expireTransaction",
+      "name": "setTimeout",
       "accounts": [
         {
           "name": "signer",
@@ -474,7 +477,7 @@ export const IDL: Dblik = {
       "args": []
     },
     {
-      "name": "clearTransactionAccount",
+      "name": "closeTransactionAccount",
       "accounts": [
         {
           "name": "signer",
@@ -533,7 +536,7 @@ export const IDL: Dblik = {
   ],
   "types": [
     {
-      "name": "ClearTransactionAccountErrors",
+      "name": "CloseTransactionAccountErrors",
       "type": {
         "kind": "enum",
         "variants": [
@@ -570,26 +573,6 @@ export const IDL: Dblik = {
       }
     },
     {
-      "name": "ExpireTransactionErrors",
-      "type": {
-        "kind": "enum",
-        "variants": [
-          {
-            "name": "NoSignerKey"
-          },
-          {
-            "name": "NotAuthenticated"
-          },
-          {
-            "name": "InvalidTransactionState"
-          },
-          {
-            "name": "StoreKeyConflict"
-          }
-        ]
-      }
-    },
-    {
       "name": "InitializeTransactionErrors",
       "type": {
         "kind": "enum",
@@ -618,6 +601,26 @@ export const IDL: Dblik = {
       }
     },
     {
+      "name": "SetTimeoutErrors",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "NoSignerKey"
+          },
+          {
+            "name": "NotAuthenticated"
+          },
+          {
+            "name": "InvalidTransactionState"
+          },
+          {
+            "name": "StoreKeyConflict"
+          }
+        ]
+      }
+    },
+    {
       "name": "TransactionState",
       "type": {
         "kind": "enum",
@@ -632,7 +635,7 @@ export const IDL: Dblik = {
             "name": "Succeed"
           },
           {
-            "name": "Expired"
+            "name": "Timeout"
           },
           {
             "name": "Canceled"
@@ -650,6 +653,9 @@ export const IDL: Dblik = {
           },
           {
             "name": "TransactionExpired"
+          },
+          {
+            "name": "TimeoutRequestedTooEarly"
           },
           {
             "name": "AccountsConflict"

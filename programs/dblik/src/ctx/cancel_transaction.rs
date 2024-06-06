@@ -18,24 +18,28 @@ impl<'info> CancelTransaction<'info> {
         let caller = self.signer.key();
 
         require!(caller == self.transaction.customer, CancelTransactionErrors::NotAuthenticated);
+
         require!(self.store.key() == self.transaction.store, CancelTransactionErrors::StoreKeyConflict);
 
-        let available_states = 
-        [
-            TransactionState::Initialized,
-            TransactionState::Pending
-        ];
+        if self.transaction.state == TransactionState::Initialized
+        {
+            self.transaction.state = TransactionState::Canceled;
+            return Ok(());
+        }
 
-        require!(available_states.contains(&self.transaction.state), CancelTransactionErrors::InvalidTransactionState);
+        if self.transaction.state == TransactionState::Pending
+        {
+            let transaction_account_info = self.transaction.to_account_info();
+            let store_account_info = self.store.to_account_info();
 
-        let transaction_account_info = self.transaction.to_account_info();
-        let store_account_info = self.store.to_account_info();
+            **transaction_account_info.try_borrow_mut_lamports()? -= RETURNABLE_STORE_FEE;
+            **store_account_info.try_borrow_mut_lamports()? += RETURNABLE_STORE_FEE;
 
-        **transaction_account_info.try_borrow_mut_lamports()? -= RETURNABLE_STORE_FEE;
-        **store_account_info.try_borrow_mut_lamports()? += RETURNABLE_STORE_FEE;
+            self.transaction.state = TransactionState::Canceled;
+            return Ok(());
+        }
 
-        self.transaction.state = TransactionState::Canceled;
-        Ok(())
+        return err!(CancelTransactionErrors::InvalidTransactionState);
     }
 }
 

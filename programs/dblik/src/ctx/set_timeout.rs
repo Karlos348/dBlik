@@ -1,7 +1,7 @@
 use crate::{consts::RETURNABLE_STORE_FEE, *};
 
 #[derive(Accounts)]
-pub struct ExpireTransaction<'info> {
+pub struct SetTimeout<'info> {
     #[account(mut)]
     pub signer: Signer<'info>,
     #[account(mut)]
@@ -11,15 +11,15 @@ pub struct ExpireTransaction<'info> {
     pub system_program: Program<'info, System>,
 }
 
-impl<'info> ExpireTransaction<'info> {
+impl<'info> SetTimeout<'info> {
     pub fn process(&mut self) -> Result<()> {
 
-        require!(self.signer.signer_key().is_some(), ExpireTransactionErrors::NoSignerKey);
+        require!(self.signer.signer_key().is_some(), SetTimeoutErrors::NoSignerKey);
         let caller = self.signer.key();
 
-        require!(caller == self.transaction.store, ExpireTransactionErrors::NotAuthenticated);
-        require!(self.store.key() == self.transaction.store, ExpireTransactionErrors::StoreKeyConflict);
-        require!(self.transaction.state == TransactionState::Pending, ExpireTransactionErrors::InvalidTransactionState);
+        require!(caller == self.transaction.store, SetTimeoutErrors::NotAuthenticated);
+        require!(self.store.key() == self.transaction.store, SetTimeoutErrors::StoreKeyConflict);
+        require!(self.transaction.state == TransactionState::Pending, SetTimeoutErrors::InvalidTransactionState);
 
         let transaction_account_info = self.transaction.to_account_info();
         let store_account_info = self.store.to_account_info();
@@ -27,12 +27,12 @@ impl<'info> ExpireTransaction<'info> {
         **transaction_account_info.try_borrow_mut_lamports()? -= RETURNABLE_STORE_FEE;
         **store_account_info.try_borrow_mut_lamports()? += RETURNABLE_STORE_FEE;
 
-        self.transaction.expire(TimeProvider)
+        self.transaction.set_timeout(TimeProvider)
     }
 }
 
 #[error_code]
-pub enum ExpireTransactionErrors {
+pub enum SetTimeoutErrors {
     #[msg("No signer key")]
     NoSignerKey,
     #[msg("Not authenticated")]

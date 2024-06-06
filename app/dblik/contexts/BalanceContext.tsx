@@ -40,7 +40,7 @@ export const BalanceProvider = ({
       fetchBalance();
       setInterval(() => {
         fetchBalance()
-      }, 10000);
+      }, 30000);
     }, [publicKey])
 
     return (

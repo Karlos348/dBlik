@@ -29,11 +29,11 @@ pub mod dblik {
         ctx.accounts.process()
     }
 
-    pub fn expire_transaction(ctx: Context<ExpireTransaction>) -> Result<()> {
+    pub fn set_timeout(ctx: Context<SetTimeout>) -> Result<()> {
         ctx.accounts.process()
     }
 
-    pub fn clear_transaction_account(ctx: Context<ClearTransactionAccount>) -> Result<()> {
+    pub fn close_transaction_account(ctx: Context<CloseTransactionAccount>) -> Result<()> {
         ctx.accounts.process()
     }
 }

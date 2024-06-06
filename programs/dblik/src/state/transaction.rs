@@ -16,7 +16,8 @@ pub struct Transaction {
 pub trait TransactionAccount {
     fn new_serialized_transaction(customer: Pubkey, time_provider: impl Time) -> Result<Vec<u8>>;
     fn assign_store(&mut self, time_provider: impl Time, store: Pubkey, amount: u64, message: String) -> Result<()>;
-    fn expire(&mut self, time_provider: impl Time) -> Result<()>;
+    fn set_timeout(&mut self, time_provider: impl Time) -> Result<()>;
+    fn is_expired(&mut self, time_provider: impl Time) -> Result<bool>;
 }
 
 impl TransactionAccount for Account<'_, Transaction> {
@@ -39,14 +40,7 @@ impl TransactionAccount for Account<'_, Transaction> {
     
     fn assign_store(&mut self, time_provider: impl Time, store: Pubkey, amount: u64, message: String) -> Result<()> {
 
-        let now = time_provider.get_timestamp();
-        require!(now <= self.timestamp + TRANSACTION_EXPIRATION_TIME_IN_SECONDS, TransactionErrors::TransactionExpired);
-        if now > self.timestamp + TRANSACTION_EXPIRATION_TIME_IN_SECONDS
-        {
-            self.state = TransactionState::Expired;
-            return err!(TransactionErrors::TransactionExpired);
-        }
-
+        require!(!self.is_expired(time_provider).unwrap(), TransactionErrors::TransactionExpired);
         require!(self.state == TransactionState::Initialized, TransactionErrors::InvalidTransactionState);
         require!(self.customer != store, TransactionErrors::AccountsConflict);
 
@@ -57,15 +51,20 @@ impl TransactionAccount for Account<'_, Transaction> {
         Ok(())
     }
 
-    fn expire(&mut self, time_provider: impl Time) -> Result<()> {
+    fn set_timeout(&mut self, time_provider: impl Time) -> Result<()> {
 
         let now = time_provider.get_timestamp();
-        require!(now > self.timestamp + TIME_TO_RETURN_STORE_FEE_IN_SECONDS, TransactionErrors::ExpirationRequestedTooEarly);
+        require!(now > self.timestamp + TIME_TO_RETURN_STORE_FEE_IN_SECONDS, TransactionErrors::TimeoutRequestedTooEarly);
         require!(self.state == TransactionState::Initialized, TransactionErrors::InvalidTransactionState);
 
-        self.state = TransactionState::Expired;
+        self.state = TransactionState::Timeout;
         Ok(())
-    }  
+    }
+
+    fn is_expired(&mut self, time_provider: impl Time) -> Result<bool> {
+        let now = time_provider.get_timestamp();
+        Ok(self.state == TransactionState::Initialized && now > self.timestamp + TRANSACTION_EXPIRATION_TIME_IN_SECONDS)
+    }
 }
 
 
@@ -74,7 +73,7 @@ pub enum TransactionState {
     Initialized,
     Pending,
     Succeed,
-    Expired,
+    Timeout,
     Canceled
 }
 
@@ -85,7 +84,7 @@ pub enum TransactionErrors {
     #[msg("Transaction expired")]
     TransactionExpired,
     #[msg("Time to return fee has not passed yet")]
-    ExpirationRequestedTooEarly,
+    TimeoutRequestedTooEarly,
     #[msg("Accounts cannot be the same")]
     AccountsConflict
 }

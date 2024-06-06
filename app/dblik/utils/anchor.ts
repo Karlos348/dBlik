@@ -4,6 +4,7 @@ import { Cluster, clusterApiUrl, Connection, PublicKey } from "@solana/web3.js";
 
 export const programId = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID as string);
 export const INITIAL_ACCOUNT_SIZE: number = 103;
+export const TRANSACTION_EXPIRATION_TIME_IN_SECONDS: number = 120;
 
 const connection = new Connection(clusterApiUrl(process.env.NEXT_PUBLIC_CLUSTER as Cluster), {
     commitment: "confirmed",

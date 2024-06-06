@@ -1,9 +1,10 @@
 import { useTransaction } from '@/contexts/TransactionContext';
 import { TransactionState } from '@/models/transaction';
+import { TRANSACTION_EXPIRATION_TIME_IN_SECONDS } from '@/utils/anchor';
 
 export default function Timer() {
     const { transaction, code, timeLeft } = useTransaction();
-    const totalTime = 120;
+    const totalTime = TRANSACTION_EXPIRATION_TIME_IN_SECONDS;
 
     const progressPercentage = ((totalTime - timeLeft) / totalTime) * 100;
 

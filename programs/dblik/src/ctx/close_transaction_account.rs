@@ -1,7 +1,7 @@
 use crate::*;
 
 #[derive(Accounts)]
-pub struct ClearTransactionAccount<'info> {
+pub struct CloseTransactionAccount<'info> {
     #[account(mut)]
     pub signer: Signer<'info>,
     #[account(mut)]
@@ -9,21 +9,22 @@ pub struct ClearTransactionAccount<'info> {
     pub system_program: Program<'info, System>,
 }
 
-impl<'info> ClearTransactionAccount<'info> {
+impl<'info> CloseTransactionAccount<'info> {
     pub fn process(&mut self) -> Result<()> {
 
-        require!(self.signer.signer_key().is_some(), ClearTransactionAccountErrors::NoSignerKey);
+        require!(self.signer.signer_key().is_some(), CloseTransactionAccountErrors::NoSignerKey);
         let caller = self.signer.key();
 
-        require!(caller == self.transaction.customer, ClearTransactionAccountErrors::NotAuthenticated);
+        require!(caller == self.transaction.customer, CloseTransactionAccountErrors::NotAuthenticated);
 
         let available_states = 
         [
+            TransactionState::Initialized,
             TransactionState::Canceled,
-            TransactionState::Expired,
+            TransactionState::Timeout,
             TransactionState::Succeed
         ];
-        require!(available_states.contains(&self.transaction.state), ClearTransactionAccountErrors::InvalidTransactionState);
+        require!(available_states.contains(&self.transaction.state), CloseTransactionAccountErrors::InvalidTransactionState);
 
         let amount = self.transaction.get_lamports();
         let transaction_account_info = self.transaction.to_account_info();
@@ -36,7 +37,7 @@ impl<'info> ClearTransactionAccount<'info> {
 }
 
 #[error_code]
-pub enum ClearTransactionAccountErrors {
+pub enum CloseTransactionAccountErrors {
     #[msg("No signer key")]
     NoSignerKey,
     #[msg("Not authenticated")]

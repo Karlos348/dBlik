@@ -7,7 +7,7 @@ export default async function handler(req, res) {
     const provider = get_provider(process);
     const program = get_program(provider);
 
-    const tx = await program.methods.expireTransaction()
+    const tx = await program.methods.setTimeout()
         .accounts({
       signer: provider.publicKey,
       transaction: transactionPubkey,

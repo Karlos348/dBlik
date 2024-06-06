@@ -102,6 +102,64 @@ export async function confirm_transaction(
     return signature;
 }
 
+export async function cancel_transaction(
+    connection: web3.Connection,
+    transactionPubkey: PublicKey,
+    payerWallet: WalletContextState,
+    storePubkey: PublicKey): Promise<string | void> {
+    const payerPubkey = payerWallet.publicKey ?? PublicKey.default;
+
+    const instruction = await program.methods.cancelTransaction()
+        .accounts({
+            signer: payerPubkey,
+            transaction: transactionPubkey,
+            store: storePubkey
+        })
+        .instruction();
+
+    let blockhash = await connection.getLatestBlockhash().then(res => res.blockhash);
+
+    const messageV0 = new TransactionMessage({
+        payerKey: payerPubkey,
+        recentBlockhash: blockhash,
+        instructions: [instruction]
+    }).compileToV0Message();
+
+    const tx = new VersionedTransaction(messageV0);
+
+    const signature = await payerWallet.sendTransaction(tx, connection).catch(e => console.error(e));
+
+    return signature;
+}
+
+export async function close_transaction_account(
+    connection: web3.Connection,
+    transactionPubkey: PublicKey,
+    payerWallet: WalletContextState): Promise<string | void> {
+    const payerPubkey = payerWallet.publicKey ?? PublicKey.default;
+
+    const instruction = await program.methods.closeTransactionAccount()
+        .accounts({
+            signer: payerPubkey,
+            transaction: transactionPubkey
+        })
+        .instruction();
+
+    let blockhash = await connection.getLatestBlockhash().then(res => res.blockhash);
+
+    const messageV0 = new TransactionMessage({
+        payerKey: payerPubkey,
+        recentBlockhash: blockhash,
+        instructions: [instruction]
+    }).compileToV0Message();
+
+    const tx = new VersionedTransaction(messageV0);
+
+    const signature = await payerWallet.sendTransaction(tx, connection).catch(e => console.error(e));
+
+    return signature;
+}
+
 export interface RawTransaction {
     discriminator: bigint;
     customer: PublicKey;

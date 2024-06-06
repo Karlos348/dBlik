@@ -1,11 +1,13 @@
-import { RawTransaction, confirm_transaction, getTransaction, initialize_transaction, map } from "@/clients/transaction_client"
+import { RawTransaction, cancel_transaction, close_transaction_account, confirm_transaction, getTransaction, initialize_transaction, map } from "@/clients/transaction_client"
 import Transaction, { TransactionState } from "@/models/transaction"
+import { TRANSACTION_EXPIRATION_TIME_IN_SECONDS } from "@/utils/anchor"
 import { generateCode } from "@/utils/code"
 import { generateSeedForCustomer, getKeypair } from "@/utils/transaction"
 import { roundDateForCustomer } from "@/utils/transaction_date"
 import { useConnection, useWallet } from "@solana/wallet-adapter-react"
 import { PublicKey } from "@solana/web3.js"
 import { createContext, useCallback, useContext, useEffect, useState } from "react"
+import { useBalance } from "./BalanceContext"
 
 type TransactionContextType = {
   code?: number
@@ -14,15 +16,15 @@ type TransactionContextType = {
   init: () => Promise<void>
   confirm: () => Promise<void>
   cancel: () => Promise<void>,
-  closeTransaction: () => Promise<void>
+  closeTransactionAccount: () => Promise<void>
 }
 
 const TransactionContext = createContext<TransactionContextType>({
-  timeLeft: 120,
+  timeLeft: TRANSACTION_EXPIRATION_TIME_IN_SECONDS,
   init: async () => { },
   confirm: async () => { },
   cancel: async () => { },
-  closeTransaction: async () => { }
+  closeTransactionAccount: async () => { }
 })
 
 export const useTransaction = () => useContext(TransactionContext);
@@ -34,9 +36,11 @@ export const TransactionProvider = ({
 }) => {
   const wallet = useWallet();
   const { connection } = useConnection();
+  const { fetchBalance } = useBalance();
   const [subscriptionId, setSubscriptionId] = useState<number>();
   const [code, setCode] = useState<number>();
-  const [timeLeft, setTimeLeft] = useState(120);
+  const [timeLeft, setTimeLeft] = useState(TRANSACTION_EXPIRATION_TIME_IN_SECONDS);
+  const [timerId, setTimerId] = useState<NodeJS.Timeout>();
   const [account, setAccount] = useState<PublicKey>();
   const [transaction, setTransaction] = useState<Transaction>();
 
@@ -66,12 +70,13 @@ export const TransactionProvider = ({
   };
 
   const cancel = async () => {
-    // todo
+    await cancel_transaction(connection, account as PublicKey, wallet, transaction?.store ?? PublicKey.default);
   };
 
-  const closeTransaction = async () => {
-    // todo
+  const closeTransactionAccount = async () => {
+    await close_transaction_account(connection, account as PublicKey, wallet);
     connection.removeProgramAccountChangeListener(subscriptionId as number)
+    restart()
   };
 
   const update = async (account: PublicKey) => {
@@ -81,6 +86,19 @@ export const TransactionProvider = ({
     transaction.update(transaction.customer, transaction.state, transaction.timestamp, transaction.store, transaction.amount, transaction.message);
     setTransaction(transaction);
     console.log(transaction);
+  };
+
+  const restart = () => {
+    if(timerId !== undefined) {
+        clearInterval(timerId)
+    }
+    setSubscriptionId(undefined);
+    setCode(undefined);
+    setTimeLeft(TRANSACTION_EXPIRATION_TIME_IN_SECONDS);
+    setTimerId(undefined);
+    setAccount(undefined);
+    setTransaction(undefined);
+    
   };
 
   useEffect(() => {
@@ -93,12 +111,33 @@ export const TransactionProvider = ({
     };
 
     const intervalId = setInterval(updateTimer, 1000);
-
+    setTimerId(intervalId)
     return () => clearInterval(intervalId);
   }, [code]);
 
+  useEffect(() => {
+    if(timeLeft === 0) {
+      clearInterval(timerId)
+      closeTransactionAccount()
+    }
+
+  }, [timeLeft])
+
+  useEffect(() => {
+    if([TransactionState.Pending, TransactionState.Initialized, undefined].includes(transaction?.state)) {
+      return;
+    }
+
+    closeTransactionAccount();
+  }, [transaction]);
+
+
+  useEffect(() => {
+    fetchBalance();
+  }, [transaction, code])
+
   return (
-    <TransactionContext.Provider value={{ code, transaction, timeLeft, init, confirm, cancel, closeTransaction }}>
+    <TransactionContext.Provider value={{ code, transaction, timeLeft, init, confirm, cancel, closeTransactionAccount }}>
       {children}
     </TransactionContext.Provider>
   )

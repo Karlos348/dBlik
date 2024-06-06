@@ -72,7 +72,7 @@ describe("dblik", () => {
       .rpc()
       .catch(e => console.error(e));
 
-    const expireTransactionTx = await program.methods.expireTransaction()
+    const setTimeoutTx = await program.methods.setTimeout()
       .accounts({
         signer: user.publicKey,
         transaction: keys.publicKey,
@@ -82,7 +82,7 @@ describe("dblik", () => {
       .rpc()
       .catch(e => console.error(e));
 
-    const clearTransactionAccountTx = await program.methods.clearTransactionAccount()
+    const closeTransactionAccountTx = await program.methods.closeTransactionAccount()
       .accounts({
         signer: user.publicKey,
         transaction: keys.publicKey,
