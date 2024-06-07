@@ -11,7 +11,7 @@ export default function Wallets() {
 
     return !connected && isClient
         ? (
-            <div className="flex min-h-screen flex-col items-center mt-16">
+            <div className="flex flex-col items-center mt-16">
                 <p className='text-5xl mb-4 text'><span>Connect a wallet</span></p>
                 {wallets.map((wallet) =>
                     wallet.readyState === "Installed"
