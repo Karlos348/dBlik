@@ -7,24 +7,26 @@ type TransactionContextType = {
   keypair: string | null
   code: number | null
   product: Product | null,
-  state: TransactionState
+  state?: TransactionState
   isClient: boolean
   selectProduct: (product) => Promise<void>
   requestPayment: (code) => Promise<void>
 }
 
 enum TransactionState {
-  New,
-  Initialized
+  Initialized,
+  Pending,
+  Succeed,
+  Timeout,
+  Canceled
 }
   
 const TransactionContext = createContext<TransactionContextType>({
   keypair: null,
   code: null,
   product: null,
-  state: TransactionState.New,
   isClient: false,
-  selectProduct: async (product) => {},
+  selectProduct: async () => {},
   requestPayment: async (code) => {},
 })
 
@@ -39,6 +41,7 @@ export const TransactionProvider = ({
     const [isClient, setIsClient] = useState(false)
     const [code, setCode] = useState<number | null>(null)
     const [product, setProduct] = useState<Product | null>(null)
+
     const selectProduct = useCallback(async (product) => {
       setProduct(product)
       console.log('productId: '+ product?.id)

@@ -1,4 +1,5 @@
 import { useTransaction } from '@/contexts/TransactionContext';
+import { useTransaction2 } from '@/contexts/TransactionContext2';
 import Product from '@/models/product';
 
 export function ProductsList() {
@@ -20,19 +21,19 @@ export function ProductsList() {
     new Product(14, 'Fifis', '/products/113.jpg', 0.05)
   ];
 
-  const transaction = useTransaction();
+  const transaction = useTransaction2();
 
   return (
     <div>
-      <h1 className="title">{transaction.product === null 
+      <h1 className="title">{transaction.product === undefined 
         ? 'Select buddy' 
-        : <p className="back" onClick={() => transaction.selectProduct(null)}>&larr; Back to buddies</p>}</h1>
+        : <p className="back" onClick={() => transaction.complete()}>&larr; Back to buddies</p>}</h1>
       <div className="grid">
         {products?.map(product => (
           <div key={product.id} 
-            className={transaction.product !== null ? "selectedProduct" : "product"}
-            hidden={transaction.product !== null && transaction.product?.id !== product.id}
-            onClick={transaction.product === null ? () => transaction.selectProduct(product) : () => {}}>
+            className={transaction.product !== undefined ? "selectedProduct" : "product"}
+            hidden={transaction.product !== undefined && transaction.product?.id !== product.id}
+            onClick={transaction.product === undefined ? () => transaction.selectProduct(product) : () => {}}>
             <p className="name">{product.name}</p>
             <img src={product.image} alt={`Product ${product.name} / ${product.id}`} className="image" />
             <p className="price">{product.price} SOL</p>

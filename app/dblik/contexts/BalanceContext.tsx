@@ -24,7 +24,7 @@ export const BalanceProvider = ({
 
     useEffect(() => {
       if(subscriptionId !== undefined) {
-        connection.removeProgramAccountChangeListener(subscriptionId as number);
+        connection.removeAccountChangeListener(subscriptionId as number);
         setSubscriptionId(undefined);
       }
 

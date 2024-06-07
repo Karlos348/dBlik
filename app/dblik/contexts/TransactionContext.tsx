@@ -73,7 +73,7 @@ export const TransactionProvider = ({
 
   const closeTransactionAccount = async () => {
     await close_transaction_account(connection, account as PublicKey, wallet);
-    connection.removeProgramAccountChangeListener(subscriptionId as number)
+    connection.removeAccountChangeListener(subscriptionId as number)
     restart()
   };
 

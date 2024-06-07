@@ -17,29 +17,29 @@ export default async function handler(req, res) {
     const keypairs = seeds.map(getKeypair);
 
     const transactionKeypairs = (await Promise.all(keypairs.map(async x => {
-      const t = await getTransaction(provider, x.publicKey);
-      return t !== null ? x : null;
+      const t = await getTransaction(provider.connection, x.publicKey);
+      return t !== undefined ? x : undefined;
     })))
-    .filter(x => x !== null);
+    .filter(x => x !== undefined);
     
     if(transactionKeypairs.length > 1)
     {
       console.log('transactionKeypairs.length > 1')
       // todo
-      return;
+      return res.status(409).json();
     }
     
     if(transactionKeypairs.length == 0)
     {
       console.log('transactionKeypairs.length == 0')
       // todo
-      return;
+      return res.status(404).json();
     }
 
     const pubkey = transactionKeypairs[0]?.publicKey;
 
     const program = get_program(provider);
-    const requestPaymentTx = await program.methods.requestPayment(new BN(amount), message)
+    const tx = await program.methods.requestPayment(new BN(amount), message)
         .accounts({
       signer: provider.publicKey,
       transaction: pubkey,
@@ -47,5 +47,5 @@ export default async function handler(req, res) {
     })
     .rpc();
     
-    res.status(200).json(requestPaymentTx);
+    return res.status(200).json(pubkey);
   }
