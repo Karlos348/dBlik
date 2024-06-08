@@ -98,7 +98,7 @@ export function ProductsList() {
             text-align: center;
             text-transform: uppercase;
             margin-top: 40px;
-            color: #000;
+          }
 
           .back {
             text-align: left;
@@ -106,8 +106,6 @@ export function ProductsList() {
             text-transform: uppercase;
             margin-left: 20px;
             cursor: pointer;
-          }
-  
           }
       `}</style>
     </div>
