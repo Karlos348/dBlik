@@ -9,12 +9,16 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@coral-xyz/anchor": "^0.29.0",
+    "@solana/buffer-layout-utils": "^0.2.0",
     "@solana/wallet-adapter-react": "^0.15.35",
     "@solana/wallet-adapter-react-ui": "^0.9.35",
     "@solana/wallet-adapter-wallets": "^0.19.32",
     "@solana/web3.js": "^1.91.4",
+    "@types/bn.js": "^5.1.5",
+    "buffer": "^6.0.3",
     "next": "14.2.1",
-    "pino-pretty": "^11.0.0",
+    "pino-pretty": "^11.1.0",
     "react": "^18",
     "react-dom": "^18"
   },
