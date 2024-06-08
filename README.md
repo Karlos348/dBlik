@@ -1,6 +1,6 @@
 <div align="center">
 
-<a href="https://github.com/Karlos348/dBlik"><img src="assets/logo.png" width="150" height="150"/></a>
+<a href="https://dblik.vercel.app/"><img src="assets/logo.png" width="150" height="150"/></a>
 
 <h1>dBlik</h1>
 
@@ -11,9 +11,18 @@ Distributed [BLIK](https://www.blik.com/)-like app using the Solana blockchain i
 ---
 
 [![Project Status: WIP – Work in Progress](https://img.shields.io/badge/Project%20Status-WIP-yellow.svg)](https://github.com/Karlos348/dBlik)
+[![Vercel Deploy](https://deploy-badge.vercel.app/vercel/dblik)](https://dblik.vercel.app/)
+
 
 ## Motivations
 The main goal is to learn about smart contracts and work in other languages than my native C#. The Solana blockchain was chosen rather accidentally, although the most important criteria were low transaction fees and popularity. I enjoy challenges, so I've chosen a topic I wasn't sure if it was even possible to accomplish.
+
+## Demo
+Web application is available with a dedicated sample store:
+- [dBlik: https://dblik.vercel.app/](https://dblik.vercel.app/)
+- [store: https://dblik-store.vercel.app/](https://dblik-store.vercel.app/)
+
+It works on the [Devnet cluster](https://explorer.solana.com/address/EE4v8mDaBcnXjYakNPUExR1DGZXS4ba4vyBSrqXXRRF3?cluster=devnet) and requires installing a wallet, such as [Phantom](https://phantom.app/). After creating an account, you can get funds using the [Faucet](https://faucet.solana.com/).
 
 ## Overview
 
@@ -26,18 +35,18 @@ The main goal is to learn about smart contracts and work in other languages than
 
 ## Roadmap
 - [x] Preliminary research
-- [ ] MVP
+- [x] MVP
     - [x] On-chain program with basic functionality
+    - [x] Local demo
+- [ ] Testing and feedback
+    - [x] Public demo
     - [ ] Cover the program with tests
-    - [ ] Local demo
 - [ ] Optional
-    - [ ] Public demo
     - [x] Refunding overdue funds in the Transaction Account
     - [x] Transaction cancellation by customer
     - [x] Transaction expiration by store
     - [ ] Integration with chosen e-commerce platform
     - [ ] Mobile application
-    - [ ] Reusing Storage Accounts to reduce transaction fees
 
 ## Research and conclusions
 ### Generating random code

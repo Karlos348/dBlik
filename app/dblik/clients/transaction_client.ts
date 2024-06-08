@@ -30,7 +30,7 @@ export async function getTransaction(connection: web3.Connection, account: Publi
 export async function initialize_transaction(
     connection: web3.Connection,
     accountKeypair: Keypair,
-    payerWallet: WalletContextState): Promise<string | void> {
+    payerWallet: WalletContextState): Promise<string | undefined> {
     const payerPubkey = payerWallet.publicKey ?? PublicKey.default;
     const requiredLamports = await connection.getMinimumBalanceForRentExemption(
         INITIAL_ACCOUNT_SIZE
@@ -68,14 +68,14 @@ export async function initialize_transaction(
 
     console.log("Account: https://explorer.solana.com/address/" + accountKeypair.publicKey + "?cluster=devnet\nTx: https://explorer.solana.com/tx/" + signature + "?cluster=devnet");
 
-    return signature;
+    return typeof signature === "string" ? signature : undefined;
 }
 
 export async function confirm_transaction(
     connection: web3.Connection,
     transactionPubkey: PublicKey,
     payerWallet: WalletContextState,
-    storePubkey: PublicKey): Promise<string | void> {
+    storePubkey: PublicKey): Promise<string | undefined> {
     const payerPubkey = payerWallet.publicKey ?? PublicKey.default;
 
     const instruction = await program.methods.confirmTransaction()
@@ -98,15 +98,14 @@ export async function confirm_transaction(
 
     const signature = await payerWallet.sendTransaction(tx, connection).catch(e => console.error(e));
 
-
-    return signature;
+    return typeof signature === "string" ? signature : undefined;;
 }
 
 export async function cancel_transaction(
     connection: web3.Connection,
     transactionPubkey: PublicKey,
     payerWallet: WalletContextState,
-    storePubkey: PublicKey): Promise<string | void> {
+    storePubkey: PublicKey): Promise<string | undefined> {
     const payerPubkey = payerWallet.publicKey ?? PublicKey.default;
 
     const instruction = await program.methods.cancelTransaction()
@@ -129,13 +128,13 @@ export async function cancel_transaction(
 
     const signature = await payerWallet.sendTransaction(tx, connection).catch(e => console.error(e));
 
-    return signature;
+    return typeof signature === "string" ? signature : undefined;
 }
 
 export async function close_transaction_account(
     connection: web3.Connection,
     transactionPubkey: PublicKey,
-    payerWallet: WalletContextState): Promise<string | void> {
+    payerWallet: WalletContextState): Promise<string | undefined> {
     const payerPubkey = payerWallet.publicKey ?? PublicKey.default;
 
     const instruction = await program.methods.closeTransactionAccount()
@@ -157,7 +156,7 @@ export async function close_transaction_account(
 
     const signature = await payerWallet.sendTransaction(tx, connection).catch(e => console.error(e));
 
-    return signature;
+    return typeof signature === "string" ? signature : undefined;
 }
 
 export interface RawTransaction {

@@ -49,7 +49,10 @@ export const TransactionProvider = ({
     const seed = generateSeedForCustomer(code, roundedDate);
     const keypair = getKeypair(seed);
 
-    const signature = await initialize_transaction(connection, keypair, wallet);
+    const result = await initialize_transaction(connection, keypair, wallet);
+    if(result === undefined) {
+      return;
+    }
 
     setCode(code);
     setAccount(keypair.publicKey)
@@ -72,18 +75,23 @@ export const TransactionProvider = ({
   };
 
   const closeTransactionAccount = async () => {
-    await close_transaction_account(connection, account as PublicKey, wallet);
+    const result = await close_transaction_account(connection, account as PublicKey, wallet);
+    if(result === undefined) {
+      return;
+    }
     connection.removeAccountChangeListener(subscriptionId as number)
     restart()
   };
 
   const update = async (account: PublicKey) => {
     let rawTransaction = await getTransaction(connection, account as PublicKey);
-    console.log(rawTransaction)
+    if(rawTransaction === undefined) {
+      return;
+    }
+    
     const transaction = map(rawTransaction as RawTransaction);
     transaction.update(transaction.customer, transaction.state, transaction.timestamp, transaction.store, transaction.amount, transaction.message);
     setTransaction(transaction);
-    console.log(transaction);
   };
 
   const restart = () => {
