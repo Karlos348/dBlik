@@ -76,4 +76,39 @@ One solution that comes to mind first, besides comparing the transaction amount,
 Another option is to charge the store a refundable fee for hooking up to the transaction, which will be refunded regardless of the success of the transaction.
 
 ## Setup
-TBD
+
+Download the project using Git
+```sh
+git clone https://github.com/Karlos348/dBlik.git
+```
+
+### dBlik - client
+
+#### Requirements:
+Node.js >= 20.x
+
+#### Stages to run
+Go to the project directory
+```
+cd ./app/dblik
+```
+Create `.env.local` file by copying the default values from `.env.prod`
+```
+cp .env.prod .env.local
+```
+Intall the dependecies
+```
+npm install
+```
+Run application
+```
+npm run dev
+```
+
+### dBlik - smart contract (program)
+
+tbd
+
+### dBlik - sample store
+
+tbd
