@@ -96,7 +96,7 @@ Create `.env.local` file by copying the default values from `.env.prod`
 ```
 cp .env.prod .env.local
 ```
-Intall the dependecies
+Intall the dependencies
 ```
 npm install
 ```
