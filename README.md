@@ -30,11 +30,27 @@ Make sure your wallet is set to testnet mode.
 
 ## Overview
 
+### Happy path
+
 <div align="center">
 
 ![overview](assets/overview.svg)
 
 ![animation](assets/animation.gif)
+
+</div>
+
+### Transaction window
+
+Codes are generated in 10-minute windows. This means that if a code is generated at 21:36, one of the seed components will be '21:30'. When checking the code at 21:41, it is necessary to check both 21:30 and 21:40, as it is within the overlap zone.
+
+Assuming half of the possible code pool (450k) is used, it is possible to conduct 23.5 billion transactions annually. This allows for over 20 times more transactions than [were conducted in 2023 with the original product in Poland](
+https://www.blik.com/blik-podsumowuje-2023-r-blisko-1-8-mld-transakcji-i-3-mln-nowych-uzytkownikow). Reducing the window to 5 minutes would enable nearly 50 billion transactions.
+
+<div align="center">
+
+![overview](assets/window.svg)
+
 </div>
 
 ## Roadmap
@@ -116,3 +132,4 @@ tbd
 ### dBlik - sample store
 
 tbd
+https://solana.com/developers/guides/getstarted/setup-local-development
