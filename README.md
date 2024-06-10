@@ -22,7 +22,11 @@ Web application is available with a dedicated sample store:
 - [dBlik: https://dblik.vercel.app/](https://dblik.vercel.app/)
 - [store: https://dblik-store.vercel.app/](https://dblik-store.vercel.app/)
 
-It works on the [Devnet cluster](https://explorer.solana.com/address/EE4v8mDaBcnXjYakNPUExR1DGZXS4ba4vyBSrqXXRRF3?cluster=devnet) and requires installing a wallet, such as [Solflare](https://solflare.com/) (preferred) or [Phantom](https://phantom.app/). After creating an account in Devnet network, you can get funds using the [Faucet](https://faucet.solana.com/).
+It works on the [Devnet cluster](https://explorer.solana.com/address/EE4v8mDaBcnXjYakNPUExR1DGZXS4ba4vyBSrqXXRRF3?cluster=devnet) and requires installing a wallet, such as [Phantom](https://phantom.app/) or [Solflare](https://solflare.com/). After creating an account in Devnet network, you can get funds using the [Faucet](https://faucet.solana.com/).
+
+#### IMPORTANT
+Make sure your wallet is set to testnet mode.
+
 
 ## Overview
 
