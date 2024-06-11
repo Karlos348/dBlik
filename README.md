@@ -4,7 +4,7 @@
 
 <h1>dBlik</h1>
 
-Distributed [BLIK ↗](https://www.blik.com/)-like app using the Solana blockchain infrastructure.
+Distributed [BLIK](https://www.blik.com/)-like app using the Solana blockchain infrastructure.
 
 </div>
 
