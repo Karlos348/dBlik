@@ -64,6 +64,7 @@ https://www.blik.com/blik-podsumowuje-2023-r-blisko-1-8-mld-transakcji-i-3-mln-n
 - [ ] Optional
     - [x] Refunding overdue funds in the Transaction Account
     - [x] Transaction cancellation by customer
+    - [x] Charging the store a refundable fee
     - [x] Transaction expiration by store
     - [ ] Integration with chosen e-commerce platform
     - [ ] Mobile application
@@ -101,7 +102,7 @@ Download the project using Git
 ```sh
 git clone https://github.com/Karlos348/dBlik.git
 ```
-
+---
 ### dBlik - client
 
 #### Requirements:
@@ -116,7 +117,7 @@ Create `.env.local` file by copying the default values from `.env.prod`
 ```
 cp .env.prod .env.local
 ```
-Intall the dependencies
+Install the dependencies
 ```
 npm install
 ```
@@ -125,16 +126,19 @@ Run application
 npm run dev
 ```
 
+---
 ### dBlik - smart contract (program)
 
-[Install system dependencies ↗](https://solana.com/developers/guides/getstarted/setup-local-development#1-installing-dependencies)
+#### Requirements
+[System dependencies ↗](https://solana.com/developers/guides/getstarted/setup-local-development#1-installing-dependencies)
 
-[Install Rust and Cargo ↗](https://solana.com/developers/guides/getstarted/setup-local-development#2-install-rust)
+[Rust and Cargo ↗](https://solana.com/developers/guides/getstarted/setup-local-development#2-install-rust)
 
-[Install Solana CLI ↗](https://solana.com/developers/guides/getstarted/setup-local-development#3-install-the-solana-cli)
+[Solana CLI ↗](https://solana.com/developers/guides/getstarted/setup-local-development#3-install-the-solana-cli)
 
-[Install Anchor ↗](https://www.anchor-lang.com/docs/installation)
+[Anchor ↗](https://www.anchor-lang.com/docs/installation)
 
+#### Stages to run
 (Windows only) Use WSL
 ```
 wsl
@@ -158,14 +162,66 @@ solana airdrop 2
 
 2 SOL may not be sufficient to deploy the program, so use [Faucet  ↗](https://faucet.solana.com/) to get more.
 
-Create program id:
+Update `./Anchor.toml`
 ```
-solana-keygen new --no-outfile
+wallet = 'PATH/id.json'
 ```
 
-tbd
+Build program
+```
+anchor build
+```
+
+Deploy program
+```
+anchor deploy
+```
+
+#### Optional
+
+Update `./Anchor.toml`
+```
+[programs.devnet]
+dblik = "GENERATED_PROGRAM_ID"
+```
+
+Update `./programs/dblik/lib.rs`
+```
+declare_id!("GENERATED_PROGRAM_ID");
+```
+
+---
+### Sample store
+
+#### Requirements:
+Node.js >= 20.x
+
+#### Stages to run
+Generate store account using wallet or (preferred) and deposit funds into it (0.5 SOL is entirely enough)
+```
+solana-keygen new -o PATH/store.json
+```
+
+Go to the project directory
+```
+cd ./app/store
+```
+Create `.env.local` file by copying `.env.prod`
+```
+cp .env.prod .env.local
+```
+Update `STORE_KEYPAIR` in `.env.local` by copying key from `PATH/store.json`
+```
+STORE_KEYPAIR=0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+```
+Install the dependencies
+```
+npm install
+```
+Run application
+```
+npm run dev
+```
 
 
-### dBlik - sample store
 
-tbd
