@@ -32,6 +32,8 @@ Make sure your wallet is set to testnet mode.
 
 ### Happy path
 
+Below is a diagram and a gif demonstrating the application's basic functionality.
+
 <div align="center">
 
 ![overview](assets/overview.svg)
@@ -61,11 +63,13 @@ https://www.blik.com/blik-podsumowuje-2023-r-blisko-1-8-mld-transakcji-i-3-mln-n
 - [ ] Testing and feedback
     - [x] Public demo
     - [ ] Cover the program with tests
+- [ ] JavaScript package
 - [ ] Optional
     - [x] Refunding overdue funds in the Transaction Account
     - [x] Transaction cancellation by customer
     - [x] Charging the store a refundable fee
     - [x] Transaction expiration by store
+    - [ ] Viewing transactions within one session
     - [ ] Integration with chosen e-commerce platform
     - [ ] Mobile application
 
@@ -102,31 +106,9 @@ Download the project using Git
 ```sh
 git clone https://github.com/Karlos348/dBlik.git
 ```
----
-### dBlik - client
-
-#### Requirements:
-Node.js >= 20.x
-
-#### Stages to run
-Go to the project directory
-```
-cd ./app/dblik
-```
-Create `.env.local` file by copying the default values from `.env.prod`
-```
-cp .env.prod .env.local
-```
-Install the dependencies
-```
-npm install
-```
-Run application
-```
-npm run dev
-```
 
 ---
+
 ### dBlik - smart contract (program)
 
 #### Requirements
@@ -160,7 +142,7 @@ Request airdrop
 solana airdrop 2
 ```
 
-2 SOL may not be sufficient to deploy the program, so use [Faucet  ↗](https://faucet.solana.com/) to get more.
+2 SOL may be insufficient to deploy the program, so use [Faucet  ↗](https://faucet.solana.com/) to get more.
 
 Update `./Anchor.toml`
 ```
@@ -188,6 +170,38 @@ dblik = "GENERATED_PROGRAM_ID"
 Update `./programs/dblik/lib.rs`
 ```
 declare_id!("GENERATED_PROGRAM_ID");
+```
+
+---
+
+### dBlik - client
+
+#### Requirements:
+Node.js >= 20.x
+
+#### Stages to run
+Go to the project directory
+```
+cd ./app/dblik
+```
+Create `.env.local` file by copying the default values from `.env.prod`
+```
+cp .env.prod .env.local
+```
+Install the dependencies
+```
+npm install
+```
+Run application
+```
+npm run dev
+```
+
+#### Optional
+
+Update `NEXT_PUBLIC_PROGRAM_ID` in `.env.local` with the generated one to use your deployed program
+```
+NEXT_PUBLIC_PROGRAM_ID=EE4v8mDaBcnXjYakNPUExR1DGZXS4ba4vyBSrqXXRRF3
 ```
 
 ---
@@ -223,5 +237,9 @@ Run application
 npm run dev
 ```
 
+#### Optional
 
-
+Update `PROGRAM_ID` in `.env.local` with the generated one to use your deployed program
+```
+PROGRAM_ID=EE4v8mDaBcnXjYakNPUExR1DGZXS4ba4vyBSrqXXRRF3
+```

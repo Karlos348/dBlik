@@ -20,6 +20,6 @@ export function get_program(provider: AnchorProvider) : Program<Dblik>
     return new Program<Dblik>(IDL, programId, provider);
 }
 
-export const programId = new PublicKey("EE4v8mDaBcnXjYakNPUExR1DGZXS4ba4vyBSrqXXRRF3");
+export const programId = new PublicKey(process.env.PROGRAM_ID as string);
 
 export const INITIAL_ACCOUNT_SIZE: number = 103;
