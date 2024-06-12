@@ -32,7 +32,7 @@ Make sure your wallet is set to testnet mode.
 
 ### Happy path
 
-Below is a diagram and a gif demonstrating the application's basic functionality.
+Diagram and animation below demonstrate the application's basic functionality.
 
 <div align="center">
 
