@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image'
-import { useTransaction2 } from '@/contexts/TransactionContext2';
+import { useTransaction } from '@/contexts/TransactionContext';
 import { TransactionState } from '@/models/transaction';
 
 export function CodeForm() {
   const [code, setCode] = useState('');
   const [checkingCode, setCheckingCode] = useState<boolean>(false);
-  const {product, transaction, requestPayment, error} = useTransaction2();
+  const {product, transaction, requestPayment, error} = useTransaction();
 
   const handleSubmit = async (e: any) => {
     setCheckingCode(true);

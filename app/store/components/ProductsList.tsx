@@ -1,5 +1,4 @@
 import { useTransaction } from '@/contexts/TransactionContext';
-import { useTransaction2 } from '@/contexts/TransactionContext2';
 import Product from '@/models/product';
 
 export function ProductsList() {
@@ -21,7 +20,7 @@ export function ProductsList() {
     new Product(14, 'Fifis', '/products/113.jpg', 0.05)
   ];
 
-  const transaction = useTransaction2();
+  const transaction = useTransaction();
 
   return (
     <div>

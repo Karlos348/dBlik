@@ -1,67 +1,110 @@
+import { getTransaction, map, requestPayment as client_requestPayment } from "@/clients/transaction_client"
 import Product from "@/models/product"
-import { generateSeedForCustomer, getKeypair } from "@/utils/transaction"
-import { roundDateForCustomer } from "@/utils/transaction_date"
+import Transaction, { TransactionState } from "@/models/transaction"
+import { Cluster, Connection, PublicKey, clusterApiUrl } from "@solana/web3.js"
 import { createContext, useCallback, useContext, useEffect, useState } from "react"
+import { setInterval } from "timers"
 
 type TransactionContextType = {
-  keypair: string | null
-  code: number | null
-  product: Product | null,
-  state?: TransactionState
-  isClient: boolean
-  selectProduct: (product) => Promise<void>
-  requestPayment: (code) => Promise<void>
+  code?: number
+  transaction?: Transaction
+  product?: Product
+  account?: PublicKey
+  error?: string
+  selectProduct: (product: Product) => Promise<void>
+  requestPayment: (code: string) => Promise<void>
+  complete: () => Promise<void>
 }
 
-enum TransactionState {
-  Initialized,
-  Pending,
-  Succeed,
-  Timeout,
-  Canceled
-}
-  
 const TransactionContext = createContext<TransactionContextType>({
-  keypair: null,
-  code: null,
-  product: null,
-  isClient: false,
-  selectProduct: async () => {},
-  requestPayment: async (code) => {},
+  selectProduct: async (product) => { },
+  requestPayment: async (code) => { },
+  complete: async () => { }
 })
 
 export const useTransaction = () => useContext(TransactionContext);
 
 export const TransactionProvider = ({
-    children
-  }: {
-    children: React.ReactNode
-  }) => {
+  children
+}: {
+  children: React.ReactNode
+}) => {
+  const [subscriptionId, setSubscriptionId] = useState<number>();
+  const [account, setAccount] = useState<PublicKey>();
+  const [code, setCode] = useState<number>();
+  const [product, setProduct] = useState<Product>();
+  const [transaction, setTransaction] = useState<Transaction>();
+  const [error, setError] = useState<string>();
+  const [connection, setConnection] = useState(new Connection(clusterApiUrl(process.env.CLUSTER as Cluster)));
+
+  const requestPayment = useCallback(async (code_in) => {
+      setCode(code_in)
+
+      if(product === undefined) {
+        return;
+      }
+
+      const pubkey = await client_requestPayment(code_in, product);
+      setAccount(pubkey);
+
+      if(pubkey === undefined) {
+        setError("invalid code")
+        setCode(undefined);
+        setTimeout(() => setError(undefined), 2000);
+        return;
+      }
+
+      const subId = connection.onAccountChange(pubkey, async (accountInfo) => {
+        console.log('Account ' + pubkey.toString() + ' has changed. \n' + accountInfo);
+        await update(pubkey);
+      }, 'confirmed');
+  
+      setSubscriptionId(subId);
+      update(pubkey)
+  }, [code, product])
+
+  const complete = async () => {
+    setProduct(undefined);
+    setAccount(undefined);
+    setTransaction(undefined);
+    setCode(undefined)
+    setError(undefined)
+
+    if(subscriptionId === undefined) {
+        return;
+    }
+
+    await connection.removeAccountChangeListener(subscriptionId)
+    setSubscriptionId(undefined)
+  };
+
+  const update = async (account: PublicKey) => {
+    const rawTransaction = await getTransaction(connection, account);
+    if(rawTransaction === undefined) {
+        return;
+    }
+
+    const t = map(rawTransaction);
+    setTransaction(t);
+  };
+
+  const selectProduct = useCallback(async (p: Product) => {
+    if(product === undefined) {
+        setProduct(p)
+    }
     
-    const [isClient, setIsClient] = useState(false)
-    const [code, setCode] = useState<number | null>(null)
-    const [product, setProduct] = useState<Product | null>(null)
+  }, [product])
 
-    const selectProduct = useCallback(async (product) => {
-      setProduct(product)
-      console.log('productId: '+ product?.id)
-    }, [product])
+  useEffect(() => {
+    if([TransactionState.Succeed, TransactionState.Canceled, TransactionState.Timeout, undefined].includes(transaction?.state) && subscriptionId !== undefined) {
+        connection.removeAccountChangeListener(subscriptionId as number)
+        setSubscriptionId(undefined)
+    }
+  }, [transaction])
 
-    const requestPayment = useCallback(async (code) => {
-      setCode(code)
-      console.log('code: '+ code)
-    }, [code])
-  
-    useEffect(() => {
-      setProduct(product)
-      setCode(code)
-      setIsClient(true)
-    }, [])
-
-    return (
-      <TransactionContext.Provider value={{ keypair: null, code, product: product, selectProduct, requestPayment, state: TransactionState.Initialized, isClient } }>
-        {children}
-      </TransactionContext.Provider>
-    )
-  }
-  
+  return (
+    <TransactionContext.Provider value={{ code, transaction, product, account, error, requestPayment, complete, selectProduct }}>
+      {children}
+    </TransactionContext.Provider>
+  )
+}
