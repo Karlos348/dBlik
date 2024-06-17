@@ -211,7 +211,7 @@ NEXT_PUBLIC_PROGRAM_ID=EE4v8mDaBcnXjYakNPUExR1DGZXS4ba4vyBSrqXXRRF3
 Node.js >= 20.x
 
 #### Stages to run
-Generate store account using wallet or (preferred) and deposit funds into it (0.5 SOL is entirely enough)
+Generate store account using wallet or CLI and deposit funds into it (0.5 SOL is entirely enough)
 ```
 solana-keygen new -o PATH/store.json
 ```
