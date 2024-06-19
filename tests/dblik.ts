@@ -1,15 +1,14 @@
 import * as anchor from "@coral-xyz/anchor";
-import { Program } from "@coral-xyz/anchor";
+import { AnchorProvider, Program } from "@coral-xyz/anchor";
 import { Wallet } from "@coral-xyz/anchor/dist/cjs/provider"
-import { Dblik } from "../target/types/dblik";
+import { Dblik, IDL } from "../target/types/dblik";
 import * as web3 from "@solana/web3.js";
 import { sha256 } from '@noble/hashes/sha256';
-import * as token from "@solana/spl-token";
-import { assert } from "chai";
-import { Keypair, PublicKey, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
+import { Keypair, PublicKey, Transaction, TransactionMessage, VersionedTransaction, sendAndConfirmTransaction } from "@solana/web3.js";
 import { BN } from "bn.js";
-import { publicKey, u64, bool, u128 } from '@solana/buffer-layout-utils';
-import { u32, u8, struct, cstr, utf8, seq, u48 } from '@solana/buffer-layout';
+import { publicKey, u64 } from '@solana/buffer-layout-utils';
+import { u32, u8, struct, seq } from '@solana/buffer-layout';
+import NodeWallet from "@coral-xyz/anchor/dist/cjs/nodewallet";
 
 const provider = anchor.AnchorProvider.env();
 console.log("wallet public key: ", provider.wallet.publicKey);
@@ -21,8 +20,8 @@ const programId = program.programId;
 describe("dblik", () => {
 
   const buffer = Buffer.concat([
-    Buffer.from("29052024"),
-    Buffer.from("103"),
+    Buffer.from("19062024"),
+    Buffer.from("100"),
     program.programId.toBuffer()
   ]);
 
@@ -43,7 +42,7 @@ describe("dblik", () => {
         transaction: keys.publicKey,
         systemProgram: anchor.web3.SystemProgram.programId,
       })
-      .rpc()
+      .rpc({commitment: 'confirmed'})
       .catch(e => console.error(e));
 
     console.log("requestPaymentTx: ", requestPaymentTx); 
@@ -144,11 +143,11 @@ async function initializeTransactionAccount(
     })
     .instruction();
 
-  let blockhash = await connection.getLatestBlockhash().then(res => res.blockhash);
+  let latestBlockHash = await connection.getLatestBlockhash();
 
   const messageV0 = new TransactionMessage({
     payerKey: payerWallet.publicKey,
-    recentBlockhash: blockhash,
+    recentBlockhash: latestBlockHash.blockhash,
     instructions: [createAccountInstruction, initTransactionInstruction],
   }).compileToV0Message();
 
@@ -156,7 +155,13 @@ async function initializeTransactionAccount(
   [accountKeypair].forEach(s => tx.sign([s]));
   payerWallet.signTransaction(tx);
 
-  const signature = await connection.sendTransaction(tx).catch(e => console.error(e));
+  const signature = await connection.sendTransaction(tx);
+
+  const confirmed = await connection.confirmTransaction({
+    blockhash: latestBlockHash.blockhash,
+    lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
+    signature: signature,
+  }, 'confirmed');
 
   console.log("Account: https://explorer.solana.com/address/" + accountKeypair.publicKey + "?cluster=devnet\nTx: https://explorer.solana.com/tx/" + signature + "?cluster=devnet");
 
