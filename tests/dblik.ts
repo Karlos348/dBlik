@@ -4,96 +4,188 @@ import { Wallet } from "@coral-xyz/anchor/dist/cjs/provider"
 import { Dblik, IDL } from "../target/types/dblik";
 import * as web3 from "@solana/web3.js";
 import { sha256 } from '@noble/hashes/sha256';
-import { Keypair, PublicKey, Transaction, TransactionMessage, VersionedTransaction, sendAndConfirmTransaction } from "@solana/web3.js";
+import { Keypair, PublicKey, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
 import { BN } from "bn.js";
 import { publicKey, u64 } from '@solana/buffer-layout-utils';
 import { u32, u8, struct, seq } from '@solana/buffer-layout';
 import NodeWallet from "@coral-xyz/anchor/dist/cjs/nodewallet";
+import { readFileSync } from "fs";
+import path from "path";
+import { assert } from "chai";
 
 const provider = anchor.AnchorProvider.env();
-console.log("wallet public key: ", provider.wallet.publicKey);
 anchor.setProvider(provider);
-const user = provider.wallet;
+const wallet = provider.wallet;
 const program = anchor.workspace.Dblik as Program<Dblik>;
 const programId = program.programId;
 
-describe("dblik", () => {
+describe("happy path", () => {
+  const keys = create_transaction_keypair(wallet);
 
-  const buffer = Buffer.concat([
-    Buffer.from("19062024"),
-    Buffer.from("100"),
-    program.programId.toBuffer()
-  ]);
+  const store_keypair = load_store_keypair();
+  const store_provider = get_store_provider(process, store_keypair);
+  const store_program = new Program<Dblik>(IDL, programId, store_provider);
 
-  const keys = web3.Keypair.fromSeed(sha256(buffer));
-
-  it("Init transaction", async () => {
-
-    const _ = await initializeTransactionAccount(provider.connection,
+  it("Init transaction account", async () => {
+    const signature = await initializeTransactionAccount(provider.connection,
       program.programId,
       keys,
-      user);
+      wallet);
 
-    await printTransaction(provider.connection, keys.publicKey);
+    console.log("signature: " + signature);
+    assert.isString(signature);
 
-    const requestPaymentTx = await program.methods.requestPayment(new BN(0.003 * web3.LAMPORTS_PER_SOL), "message-111111")
+    const transaction = await getTransaction(keys.publicKey);
+    assert.equal(transaction.state, 0);
+  });
+
+  it("Request payment", async () => {
+    const signature = await store_program.methods.requestPayment(new BN(0.0001 * web3.LAMPORTS_PER_SOL), "message-111111")
       .accounts({
-        signer: user.publicKey,
+        signer: store_provider.publicKey,
         transaction: keys.publicKey,
         systemProgram: anchor.web3.SystemProgram.programId,
       })
       .rpc({commitment: 'confirmed'})
       .catch(e => console.error(e));
 
-    console.log("requestPaymentTx: ", requestPaymentTx); 
+      console.log("signature: " + signature);
+      assert.isString(signature);
 
-    const transaction = await getTransaction(provider.connection, keys.publicKey);
+      const transaction = await getTransaction(keys.publicKey);
+      assert.equal(transaction.state, 1);
+  });
 
-    const confirmTransactionTx = await program.methods.confirmTransaction()
+  it("Confirm transaction", async () => {
+      const signature = await program.methods.confirmTransaction()
       .accounts({
-        signer: user.publicKey,
+        signer: wallet.publicKey,
         transaction: keys.publicKey,
-        store: transaction.store
+        store: store_keypair.publicKey,
+        systemProgram: anchor.web3.SystemProgram.programId
       })
-      .rpc()
+      .rpc({commitment: 'confirmed'})
       .catch(e => console.error(e));
 
-    console.log("confirmTransactionTx: ", confirmTransactionTx);
-    await printTransaction(provider.connection, keys.publicKey);
+      console.log("signature: " + signature);
+      assert.isString(signature);
 
-    const cancelTransactionTx = await program.methods.cancelTransaction()
-      .accounts({
-        signer: user.publicKey,
-        transaction: keys.publicKey,
-        store: transaction.store,
-        systemProgram: anchor.web3.SystemProgram.programId,
-      })
-      .rpc()
-      .catch(e => console.error(e));
+      const transaction = await getTransaction(keys.publicKey);
+      assert.equal(transaction.state, 2);
+  });
 
-    const setTimeoutTx = await program.methods.setTimeout()
-      .accounts({
-        signer: user.publicKey,
-        transaction: keys.publicKey,
-        store: transaction.store,
-        systemProgram: anchor.web3.SystemProgram.programId,
-      })
-      .rpc()
-      .catch(e => console.error(e));
+  it("Close account", async () => {
+    const signature = await program.methods.closeTransactionAccount()
+    .accounts({
+      signer: wallet.publicKey,
+      transaction: keys.publicKey,
+      systemProgram: anchor.web3.SystemProgram.programId
+    })
+    .rpc({commitment: 'confirmed'})
+    .catch(e => console.error(e));
 
-    const closeTransactionAccountTx = await program.methods.closeTransactionAccount()
-      .accounts({
-        signer: user.publicKey,
-        transaction: keys.publicKey,
-        systemProgram: anchor.web3.SystemProgram.programId,
-      })
-      .rpc()
-      .catch(e => console.error(e));
+    console.log("signature: " + signature);
+    assert.isString(signature);
   });
 
 });
 
-async function getTransaction(connection: anchor.web3.Connection, account: PublicKey) {
+describe("transaction cancelation by customer", () => {
+  const keys = create_transaction_keypair(wallet);
+
+  const store_keypair = load_store_keypair();
+  const store_provider = get_store_provider(process, store_keypair);
+  const store_program = new Program<Dblik>(IDL, programId, store_provider);
+
+  it("Init transaction account", async () => {
+    const signature = await initializeTransactionAccount(provider.connection,
+      program.programId,
+      keys,
+      wallet);
+
+    console.log("signature: " + signature);
+    assert.isString(signature);
+
+    const transaction = await getTransaction(keys.publicKey);
+    assert.equal(transaction.state, 0);
+  });
+
+  it("Request payment", async () => {
+    const signature = await store_program.methods.requestPayment(new BN(0.0001 * web3.LAMPORTS_PER_SOL), "message")
+      .accounts({
+        signer: store_provider.publicKey,
+        transaction: keys.publicKey,
+        systemProgram: anchor.web3.SystemProgram.programId,
+      })
+      .rpc({commitment: 'confirmed'})
+      .catch(e => console.error(e));
+
+      console.log("signature: " + signature);
+      assert.isString(signature);
+
+      const transaction = await getTransaction(keys.publicKey);
+      assert.equal(transaction.state, 1);
+  });
+
+  it("Cancel transaction", async () => {
+    const signature = await program.methods.cancelTransaction()
+      .accounts({
+        signer: wallet.publicKey,
+        transaction: keys.publicKey,
+        store: store_keypair.publicKey,
+        systemProgram: anchor.web3.SystemProgram.programId
+      })
+      .rpc({commitment: 'confirmed'})
+      .catch(e => console.error(e));
+
+      console.log("signature: " + signature);
+      assert.isString(signature);
+
+      const transaction = await getTransaction(keys.publicKey);
+      assert.equal(transaction.state, 4);
+  });
+
+  it("Close account", async () => {
+    const signature = await program.methods.closeTransactionAccount()
+    .accounts({
+      signer: wallet.publicKey,
+      transaction: keys.publicKey,
+      systemProgram: anchor.web3.SystemProgram.programId
+    })
+    .rpc({commitment: 'confirmed'})
+    .catch(e => console.error(e));
+
+    console.log("signature: " + signature);
+    assert.isString(signature);
+  });
+});
+
+function get_store_provider(process : NodeJS.Process, store_keypair: Keypair) : AnchorProvider
+{
+    const connection = new web3.Connection(web3.clusterApiUrl(process.env.CLUSTER as web3.Cluster));
+    const wallet = new NodeWallet(store_keypair);
+    return new AnchorProvider(connection, wallet, {
+        commitment: "confirmed",
+    });
+}
+
+function load_store_keypair(): Keypair {
+  const secretKeyString = readFileSync(path.resolve(__dirname, './store_keypair.json'), { encoding: 'utf8' });
+  const secretKey = Uint8Array.from(JSON.parse(secretKeyString));
+  return Keypair.fromSecretKey(secretKey);
+}
+
+function create_transaction_keypair(wallet: Wallet): Keypair {
+  const buffer = Buffer.concat([
+    Buffer.from(Date.now().toString()),
+    Buffer.from(wallet.publicKey.toString()),
+    program.programId.toBuffer()
+  ]);
+  const keys = web3.Keypair.fromSeed(sha256(buffer));
+  return keys;
+}
+
+async function getTransaction(account: PublicKey) {
   const acc = await provider.connection.getAccountInfo(account);
 
   const data = struct<RawTransaction>([
@@ -109,8 +201,8 @@ async function getTransaction(connection: anchor.web3.Connection, account: Publi
   return data;
 }
 
-async function printTransaction(connection: anchor.web3.Connection, account: PublicKey) {
-  const data = await getTransaction(connection, account);
+async function printTransaction(account: PublicKey) {
+  const data = await getTransaction(account);
   console.log("amount:", data.amount);
   console.log("customer:", data.customer.toString());
   console.log("message:", data.message.toString());
@@ -137,7 +229,7 @@ async function initializeTransactionAccount(
 
   const initTransactionInstruction = await program.methods.initTransaction()
     .accounts({
-      signer: user.publicKey,
+      signer: wallet.publicKey,
       transaction: accountKeypair.publicKey,
       systemProgram: anchor.web3.SystemProgram.programId,
     })
@@ -157,16 +249,15 @@ async function initializeTransactionAccount(
 
   const signature = await connection.sendTransaction(tx);
 
-  const confirmed = await connection.confirmTransaction({
+  const _ = await connection.confirmTransaction({
     blockhash: latestBlockHash.blockhash,
     lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
     signature: signature,
   }, 'confirmed');
-
-  console.log("Account: https://explorer.solana.com/address/" + accountKeypair.publicKey + "?cluster=devnet\nTx: https://explorer.solana.com/tx/" + signature + "?cluster=devnet");
-
+  
   return signature;
 }
+
 
 export interface RawTransaction {
   discriminator: bigint;
