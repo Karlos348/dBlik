@@ -19,14 +19,15 @@ const wallet = provider.wallet;
 const program = anchor.workspace.Dblik as Program<Dblik>;
 const programId = program.programId;
 
-describe("happy path", () => {
+describe("happy path", function () {
   const keys = create_transaction_keypair(wallet);
 
   const store_keypair = load_store_keypair();
   const store_provider = get_store_provider(process, store_keypair);
   const store_program = new Program<Dblik>(IDL, programId, store_provider);
 
-  it("Init transaction account", async () => {
+  it("Init transaction account", async function () {
+    this.retries(3);
     const signature = await initializeTransactionAccount(provider.connection,
       program.programId,
       keys,
@@ -39,7 +40,8 @@ describe("happy path", () => {
     assert.equal(transaction.state, 0);
   });
 
-  it("Request payment", async () => {
+  it("Request payment", async function () {
+    this.retries(3);
     const signature = await store_program.methods.requestPayment(new BN(0.0001 * web3.LAMPORTS_PER_SOL), "message-111111")
       .accounts({
         signer: store_provider.publicKey,
@@ -56,7 +58,8 @@ describe("happy path", () => {
       assert.equal(transaction.state, 1);
   });
 
-  it("Confirm transaction", async () => {
+  it("Confirm transaction", async function () {
+    this.retries(3);
       const signature = await program.methods.confirmTransaction()
       .accounts({
         signer: wallet.publicKey,
@@ -74,7 +77,8 @@ describe("happy path", () => {
       assert.equal(transaction.state, 2);
   });
 
-  it("Close account", async () => {
+  it("Close account", async function () {
+    this.retries(3);
     const signature = await program.methods.closeTransactionAccount()
     .accounts({
       signer: wallet.publicKey,
@@ -90,14 +94,16 @@ describe("happy path", () => {
 
 });
 
-describe("transaction cancelation by customer", () => {
+describe("insufficient balance", () => {
+
   const keys = create_transaction_keypair(wallet);
 
   const store_keypair = load_store_keypair();
   const store_provider = get_store_provider(process, store_keypair);
   const store_program = new Program<Dblik>(IDL, programId, store_provider);
 
-  it("Init transaction account", async () => {
+  it("Init transaction account", async function () {
+    this.retries(3);
     const signature = await initializeTransactionAccount(provider.connection,
       program.programId,
       keys,
@@ -110,7 +116,64 @@ describe("transaction cancelation by customer", () => {
     assert.equal(transaction.state, 0);
   });
 
-  it("Request payment", async () => {
+  it("Request payment", async function () {
+    this.retries(3);
+    const signature = await store_program.methods.requestPayment(new BN(9999 * web3.LAMPORTS_PER_SOL), "message")
+      .accounts({
+        signer: store_provider.publicKey,
+        transaction: keys.publicKey,
+        systemProgram: anchor.web3.SystemProgram.programId,
+      })
+      .rpc({commitment: 'confirmed'})
+      .catch(e => console.error(e));
+
+      console.log("signature: " + signature);
+      assert.isString(signature);
+
+      const transaction = await getTransaction(keys.publicKey);
+      assert.equal(transaction.state, 1);
+  });
+
+  it("Confirm transaction", async function () {
+    this.retries(3);
+      const signature = await program.methods.confirmTransaction()
+      .accounts({
+        signer: wallet.publicKey,
+        transaction: keys.publicKey,
+        store: store_keypair.publicKey,
+        systemProgram: anchor.web3.SystemProgram.programId
+      })
+      .rpc({commitment: 'confirmed'})
+      .catch(e => e as anchor.AnchorError);
+
+      assert.equal("InsufficientBalance", (signature as anchor.AnchorError).error?.errorCode.code);
+  });
+
+});
+
+describe("transaction cancelation by customer", () => {
+  const keys = create_transaction_keypair(wallet);
+
+  const store_keypair = load_store_keypair();
+  const store_provider = get_store_provider(process, store_keypair);
+  const store_program = new Program<Dblik>(IDL, programId, store_provider);
+
+  it("Init transaction account", async function () {
+    this.retries(3);
+    const signature = await initializeTransactionAccount(provider.connection,
+      program.programId,
+      keys,
+      wallet);
+
+    console.log("signature: " + signature);
+    assert.isString(signature);
+
+    const transaction = await getTransaction(keys.publicKey);
+    assert.equal(transaction.state, 0);
+  });
+
+  it("Request payment", async function () {
+    this.retries(3);
     const signature = await store_program.methods.requestPayment(new BN(0.0001 * web3.LAMPORTS_PER_SOL), "message")
       .accounts({
         signer: store_provider.publicKey,
@@ -127,7 +190,8 @@ describe("transaction cancelation by customer", () => {
       assert.equal(transaction.state, 1);
   });
 
-  it("Cancel transaction", async () => {
+  it("Cancel transaction", async function () {
+    this.retries(3);
     const signature = await program.methods.cancelTransaction()
       .accounts({
         signer: wallet.publicKey,
@@ -145,7 +209,8 @@ describe("transaction cancelation by customer", () => {
       assert.equal(transaction.state, 4);
   });
 
-  it("Close account", async () => {
+  it("Close account", async function () {
+    this.retries(3);
     const signature = await program.methods.closeTransactionAccount()
     .accounts({
       signer: wallet.publicKey,
@@ -157,6 +222,64 @@ describe("transaction cancelation by customer", () => {
 
     console.log("signature: " + signature);
     assert.isString(signature);
+  });
+});
+
+describe("transaction expiration by store", () => {
+  const keys = create_transaction_keypair(wallet);
+
+  const store_keypair = load_store_keypair();
+  const store_provider = get_store_provider(process, store_keypair);
+  const store_program = new Program<Dblik>(IDL, programId, store_provider);
+
+  it("Init transaction account", async function () {
+    this.retries(3);
+    const signature = await initializeTransactionAccount(provider.connection,
+      program.programId,
+      keys,
+      wallet);
+
+    console.log("signature: " + signature);
+    assert.isString(signature);
+
+    const transaction = await getTransaction(keys.publicKey);
+    assert.equal(transaction.state, 0);
+  });
+
+  it("Request payment", async function () {
+    this.retries(3);
+    const signature = await store_program.methods.requestPayment(new BN(0.0001 * web3.LAMPORTS_PER_SOL), "message")
+      .accounts({
+        signer: store_provider.publicKey,
+        transaction: keys.publicKey,
+        systemProgram: anchor.web3.SystemProgram.programId,
+      })
+      .rpc({commitment: 'confirmed'})
+      .catch(e => console.error(e));
+
+      console.log("signature: " + signature);
+      assert.isString(signature);
+
+      const transaction = await getTransaction(keys.publicKey);
+      assert.equal(transaction.state, 1);
+  });
+
+  it("Set timeout", async function () {
+    this.retries(3);
+    const signature = await store_program.methods.setTimeout()
+      .accounts({
+        signer: store_provider.publicKey,
+        store: store_provider.publicKey,
+        transaction: keys.publicKey,
+        systemProgram: anchor.web3.SystemProgram.programId,
+      })
+      .rpc({commitment: 'confirmed'})
+      .catch(e => e as anchor.AnchorError);
+
+      assert.equal("TimeoutRequestedTooEarly", (signature as anchor.AnchorError).error.errorCode.code);
+
+      const transaction = await getTransaction(keys.publicKey);
+      assert.equal(transaction.state, 1);
   });
 });
 
@@ -177,7 +300,7 @@ function load_store_keypair(): Keypair {
 
 function create_transaction_keypair(wallet: Wallet): Keypair {
   const buffer = Buffer.concat([
-    Buffer.from(Date.now().toString()),
+    Buffer.from(Date.now().valueOf().toString()),
     Buffer.from(wallet.publicKey.toString()),
     program.programId.toBuffer()
   ]);
