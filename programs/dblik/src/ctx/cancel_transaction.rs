@@ -21,25 +21,19 @@ impl<'info> CancelTransaction<'info> {
 
         require!(self.store.key() == self.transaction.store, CancelTransactionErrors::StoreKeyConflict);
 
-        if self.transaction.state == TransactionState::Initialized
+        if self.transaction.state != TransactionState::Pending
         {
-            self.transaction.state = TransactionState::Canceled;
-            return Ok(());
+            return err!(CancelTransactionErrors::InvalidTransactionState);
         }
 
-        if self.transaction.state == TransactionState::Pending
-        {
-            let transaction_account_info = self.transaction.to_account_info();
-            let store_account_info = self.store.to_account_info();
+        let transaction_account_info = self.transaction.to_account_info();
+        let store_account_info = self.store.to_account_info();
 
-            **transaction_account_info.try_borrow_mut_lamports()? -= RETURNABLE_STORE_FEE;
-            **store_account_info.try_borrow_mut_lamports()? += RETURNABLE_STORE_FEE;
+        **transaction_account_info.try_borrow_mut_lamports()? -= RETURNABLE_STORE_FEE;
+        **store_account_info.try_borrow_mut_lamports()? += RETURNABLE_STORE_FEE;
 
-            self.transaction.state = TransactionState::Canceled;
-            return Ok(());
-        }
-
-        return err!(CancelTransactionErrors::InvalidTransactionState);
+        self.transaction.state = TransactionState::Canceled;
+        Ok(())
     }
 }
 
