@@ -47,7 +47,7 @@ https://www.blik.com/blik-podsumowuje-2023-r-blisko-1-8-mld-transakcji-i-3-mln-n
 
 <div align="center">
 
-![overview](assets/window.svg)
+![window](assets/window.svg)
 
 </div>
 
